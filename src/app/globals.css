@@ -169,6 +169,30 @@ body {
   50% { opacity: 0.5; }
 }
 
+/* Core glow pulse animation */
+@keyframes corePulse {
+  0%, 100% { 
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.5), 0 0 60px rgba(0, 255, 255, 0.3);
+  }
+  50% { 
+    box-shadow: 0 0 50px rgba(0, 255, 255, 0.8), 0 0 100px rgba(0, 255, 255, 0.5);
+  }
+}
+
+.core-pulse {
+  animation: corePulse 2s ease-in-out infinite;
+}
+
+/* Orbiting ring animation */
+@keyframes orbit {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.orbit-ring {
+  animation: orbit 10s linear infinite;
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;

@@ -1,0 +1,51 @@
+{
+  "tasks": [
+    { "id": "1", "text": "Get Shopify Admin API key", "priority": "P0", "done": false, "assignee": "John" },
+    { "id": "2", "text": "Post blogs to Shopify", "priority": "P1", "done": false, "assignee": "John" },
+    { "id": "3", "text": "Review Command Center dashboard", "priority": "P1", "done": false, "assignee": "John" },
+    { "id": "4", "text": "Call suit place", "priority": "P2", "done": false, "assignee": "John" },
+    { "id": "5", "text": "Create Facebook page for JA", "priority": "P2", "done": false, "assignee": "John" },
+    { "id": "6", "text": "Write 3 more SEO blog posts", "priority": "P1", "done": false, "assignee": "Bellatrix" },
+    { "id": "7", "text": "Set up follower milestone alerts", "priority": "P2", "done": false, "assignee": "Bellatrix" }
+  ],
+  "initiatives": [
+    {
+      "id": "seo",
+      "name": "Jurassic Apparel SEO",
+      "status": "active",
+      "progress": 15,
+      "blockers": null,
+      "nextSteps": [
+        "Post Blog #1 and #2 to Shopify",
+        "Write 3 more blog posts targeting SD<20 keywords",
+        "Set up rank tracking for target keywords"
+      ]
+    },
+    {
+      "id": "dashboard",
+      "name": "Command Center Dashboard",
+      "status": "active",
+      "progress": 35,
+      "blockers": "Shopify API key needed for real revenue data",
+      "nextSteps": [
+        "Wire up real activity logs",
+        "Add Gmail integration",
+        "Connect Google Calendar",
+        "Add keyboard shortcuts"
+      ]
+    },
+    {
+      "id": "healthy-remote",
+      "name": "Healthy Remote App",
+      "status": "paused",
+      "progress": 78,
+      "blockers": null,
+      "nextSteps": [
+        "Resume development when prioritized",
+        "Complete remaining UI screens",
+        "Beta test with 5 users"
+      ]
+    }
+  ],
+  "accomplishments": []
+}
