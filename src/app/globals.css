@@ -227,3 +227,114 @@ body {
 .data-stream > *:nth-child(3) { animation-delay: 1s; }
 .data-stream > *:nth-child(4) { animation-delay: 1.5s; }
 .data-stream > *:nth-child(5) { animation-delay: 2s; }
+
+/* Neon text effects */
+.neon-cyan {
+  color: var(--accent-cyan);
+  text-shadow: 
+    0 0 5px var(--accent-cyan),
+    0 0 10px var(--accent-cyan),
+    0 0 20px var(--accent-cyan);
+}
+
+.neon-magenta {
+  color: var(--accent-magenta);
+  text-shadow: 
+    0 0 5px var(--accent-magenta),
+    0 0 10px var(--accent-magenta),
+    0 0 20px var(--accent-magenta);
+}
+
+.neon-green {
+  color: var(--accent-green);
+  text-shadow: 
+    0 0 5px var(--accent-green),
+    0 0 10px var(--accent-green),
+    0 0 20px var(--accent-green);
+}
+
+/* Hover lift effect */
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Animated border */
+@keyframes borderGlow {
+  0%, 100% { border-color: var(--accent-cyan); }
+  50% { border-color: var(--accent-magenta); }
+}
+
+.border-animate {
+  animation: borderGlow 4s ease-in-out infinite;
+}
+
+/* Activity entry animation */
+@keyframes slideIn {
+  from { 
+    opacity: 0; 
+    transform: translateX(-20px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateX(0); 
+  }
+}
+
+.slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+/* Stats card shine effect */
+.stat-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.03) 50%,
+    transparent 60%
+  );
+  transform: rotate(45deg);
+  animation: shine 8s infinite;
+}
+
+@keyframes shine {
+  0% { transform: translateX(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) rotate(45deg); }
+}
+
+/* Task completion animation */
+@keyframes checkmark {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.task-complete {
+  animation: checkmark 0.3s ease-out;
+}
+
+/* Typing cursor */
+.typing-cursor::after {
+  content: '▊';
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
