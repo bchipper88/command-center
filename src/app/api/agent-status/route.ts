@@ -9,14 +9,16 @@ function getSupabase(): SupabaseClient | null {
 }
 
 export async function GET() {
+  // Default response - Bellatrix is always "online" when the dashboard loads
+  const defaultStatus = {
+    online: true,
+    currentTask: null,
+    sessionStart: new Date().toISOString(),
+  };
+
   const supabase = getSupabase();
   if (!supabase) {
-    return NextResponse.json({
-      is_active: true,
-      activity_level: 3,
-      sub_agent_count: 0,
-      last_tool: 'system',
-    });
+    return NextResponse.json(defaultStatus);
   }
 
   try {
@@ -26,28 +28,20 @@ export async function GET() {
       .eq('id', 'main')
       .single();
 
-    if (error) throw error;
-
-    // Check if last activity was within 30 seconds (agent is "active")
-    const lastActivity = new Date(data.last_activity);
-    const now = new Date();
-    const diffSeconds = (now.getTime() - lastActivity.getTime()) / 1000;
-    const isActive = diffSeconds < 30;
+    if (error) {
+      // Table might not exist yet
+      return NextResponse.json(defaultStatus);
+    }
 
     return NextResponse.json({
-      ...data,
-      is_active: isActive,
-      // Decay activity level if no recent activity
-      activity_level: isActive ? data.activity_level : Math.max(0, data.activity_level - 2),
+      online: data.is_active ?? true,
+      currentTask: data.current_task || null,
+      sessionStart: data.session_start || new Date().toISOString(),
+      lastActivity: data.last_activity,
     });
   } catch (err) {
     console.error('Agent status GET error:', err);
-    return NextResponse.json({
-      is_active: false,
-      activity_level: 0,
-      sub_agent_count: 0,
-      last_tool: 'unknown',
-    });
+    return NextResponse.json(defaultStatus);
   }
 }
 
@@ -61,17 +55,17 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     
+    // Upsert the status
     const { error } = await supabase
       .from('dashboard_agent_status')
-      .update({
-        is_active: body.is_active ?? true,
-        activity_level: body.activity_level ?? 5,
-        sub_agent_count: body.sub_agent_count ?? 0,
-        last_tool: body.last_tool,
+      .upsert({
+        id: 'main',
+        is_active: body.online ?? true,
+        current_task: body.currentTask || null,
+        session_start: body.sessionStart || new Date().toISOString(),
         last_activity: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-      })
-      .eq('id', 'main');
+      });
 
     if (error) throw error;
 
