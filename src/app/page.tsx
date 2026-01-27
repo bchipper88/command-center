@@ -799,22 +799,27 @@ export default function Dashboard() {
         {/* STATS BAR */}
         <StatsBar stats={stats} time={time} />
 
-        {/* TOP ROW: Active Now + Activity Log */}
+        {/* TOP ROW: Tasks (Hero) + Bellatrix Status */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <div className="cyber-card p-6 h-full border-t-2 border-[var(--accent-amber)]">
+              <h2 className="text-xl font-mono text-[var(--accent-amber)] mb-4 flex items-center gap-2">
+                <span>✅</span> TASKS <span className="text-[var(--text-muted)] text-sm">({pendingTaskCount} pending)</span>
+              </h2>
+              <TaskQueue 
+                tasks={tasks} 
+                onToggle={handleToggleTask} 
+                onAdd={handleAddTask} 
+                onDelete={handleDeleteTask} 
+              />
+            </div>
+          </div>
           <div className="lg:col-span-1">
             <ActiveNowPanel agentStatus={agentStatus} currentTasks={tasks} />
           </div>
-          <div className="lg:col-span-2">
-            <div className="cyber-card p-6 h-full">
-              <h2 className="text-lg font-mono text-[var(--accent-cyan)] mb-4 flex items-center gap-2">
-                <span>📋</span> ACTIVITY LOG
-              </h2>
-              <ActivityLog entries={activity} onAdd={handleAddActivity} />
-            </div>
-          </div>
         </div>
 
-        {/* MIDDLE ROW: Projects + Tasks */}
+        {/* MIDDLE ROW: Projects + Activity Log */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="cyber-card p-6">
             <h2 className="text-lg font-mono text-[var(--accent-green)] mb-4 flex items-center gap-2">
@@ -823,15 +828,10 @@ export default function Dashboard() {
             <ProjectsPanel initiatives={initiatives} onUpdate={handleUpdateInitiative} />
           </div>
           <div className="cyber-card p-6">
-            <h2 className="text-lg font-mono text-[var(--accent-amber)] mb-4 flex items-center gap-2">
-              <span>✅</span> TASKS <span className="text-[var(--text-muted)] text-sm">({pendingTaskCount} pending)</span>
+            <h2 className="text-lg font-mono text-[var(--accent-cyan)] mb-4 flex items-center gap-2">
+              <span>📋</span> ACTIVITY LOG
             </h2>
-            <TaskQueue 
-              tasks={tasks} 
-              onToggle={handleToggleTask} 
-              onAdd={handleAddTask} 
-              onDelete={handleDeleteTask} 
-            />
+            <ActivityLog entries={activity} onAdd={handleAddActivity} />
           </div>
         </div>
 
