@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 
 const siteNames: Record<string, string> = {
   lv: 'Lehigh Valley',
@@ -37,14 +36,14 @@ const eventIcons: Record<string, string> = {
 
 type Props = {
   siteId: string
-  site: any
-  businesses: any[]
-  blogPosts: any[]
-  keywords: any[]
-  activity: any[]
+  site: Record<string, unknown> | null
+  businesses: Array<{ category: string; subcategory?: string | null }>
+  blogPosts: Array<{ status: string }>
+  keywords: Array<{ gsc_clicks?: number | null; gsc_position?: number | null }>
+  activity: Array<{ id: string; event_type: string; title: string; description?: string | null; created_at: string }>
 }
 
-export function SiteOverviewClient({ siteId, site, businesses, blogPosts, keywords, activity }: Props) {
+export function SiteOverviewClient({ siteId, site: _site, businesses, blogPosts, keywords, activity }: Props) {
   const isDirectory = siteId !== 'jurassic'
 
   // Category breakdown

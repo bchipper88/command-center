@@ -3,7 +3,6 @@
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 const siteNames: Record<string, string> = { lv: 'Lehigh Valley', denver: 'Denver', savannah: 'Savannah' }
