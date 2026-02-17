@@ -154,27 +154,34 @@ export function DashboardClient({ data }: Props) {
           { id: 'savannah', name: 'Savannah', domain: 'bestsavannahga.com', total_businesses: 0, total_blog_posts: 0 },
           { id: 'jurassic', name: 'Jurassic Apparel', domain: 'jurassicapparel.shop', total_businesses: 0, total_blog_posts: 0 },
         ]).map((site) => (
-          <Card key={site.id} className={`border ${siteColors[site.id] || 'border-white/5'}`}>
-            <CardContent className="pt-4 pb-3 px-4">
-              <div className="flex items-center gap-2 mb-3">
-                <span>{siteIcons[site.id] || '🌐'}</span>
-                <span className="font-semibold text-white text-sm">{site.name}</span>
-              </div>
-              <div className="grid grid-cols-2 gap-2 text-xs font-mono">
-                <div>
-                  <span className="text-neutral-500">Businesses</span>
-                  <p className="text-white font-bold text-lg">{site.total_businesses}</p>
+          <a key={site.id} href={`/site/${site.id}`} className="block group">
+            <Card className={`border transition-all group-hover:ring-1 group-hover:ring-white/20 ${siteColors[site.id] || 'border-white/5'}`}>
+              <CardContent className="pt-4 pb-3 px-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <span>{siteIcons[site.id] || '🌐'}</span>
+                    <span className="font-semibold text-white text-sm">{site.name}</span>
+                  </div>
+                  <span className="text-neutral-600 group-hover:text-white text-xs transition-colors">→</span>
                 </div>
-                <div>
-                  <span className="text-neutral-500">Blog Posts</span>
-                  <p className="text-white font-bold text-lg">{site.total_blog_posts}</p>
+                <div className="grid grid-cols-2 gap-2 text-xs font-mono">
+                  {site.id !== 'jurassic' && (
+                    <div>
+                      <span className="text-neutral-500">Businesses</span>
+                      <p className="text-white font-bold text-lg">{site.total_businesses}</p>
+                    </div>
+                  )}
+                  <div>
+                    <span className="text-neutral-500">Blog Posts</span>
+                    <p className="text-white font-bold text-lg">{site.total_blog_posts}</p>
+                  </div>
                 </div>
-              </div>
-              {site.domain && (
-                <p className="text-[10px] font-mono text-neutral-600 mt-2">{site.domain}</p>
-              )}
-            </CardContent>
-          </Card>
+                {site.domain && (
+                  <p className="text-[10px] font-mono text-neutral-600 mt-2">{site.domain}</p>
+                )}
+              </CardContent>
+            </Card>
+          </a>
         ))}
       </div>
     </div>
