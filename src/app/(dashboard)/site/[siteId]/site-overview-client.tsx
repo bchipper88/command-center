@@ -43,7 +43,8 @@ type Props = {
   activity: Array<{ id: string; event_type: string; title: string; description?: string | null; created_at: string }>
 }
 
-export function SiteOverviewClient({ siteId, site: _site, businesses, blogPosts, keywords, activity }: Props) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function SiteOverviewClient({ siteId, site, businesses, blogPosts, keywords, activity }: Props) {
   const isDirectory = siteId !== 'jurassic'
 
   // Category breakdown

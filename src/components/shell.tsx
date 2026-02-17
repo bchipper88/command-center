@@ -37,7 +37,7 @@ export function Shell({ children }: { children: ReactNode }) {
   // Detect if we're on a site page
   const siteMatch = pathname.match(/^\/site\/(lv|denver|savannah|jurassic)/)
   const activeSiteId = siteMatch ? siteMatch[1] : null
-  const _activeSite = sites.find(s => s.id === activeSiteId)
+  // const activeSite = sites.find(s => s.id === activeSiteId)
 
   return (
     <div className="flex h-screen overflow-hidden">

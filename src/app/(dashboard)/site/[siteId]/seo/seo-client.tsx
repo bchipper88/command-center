@@ -23,13 +23,15 @@ function PositionBadge({ pos }: { pos: number | null }) {
   return <span className={`font-mono font-bold ${color}`}>{pos.toFixed(1)}</span>
 }
 
-export function SEOClient({ siteId, keywords, gscSnapshots: _gscSnapshots }: { siteId: string; keywords: Keyword[]; gscSnapshots: GscSnapshot[] }) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function SEOClient({ siteId, keywords, gscSnapshots }: { siteId: string; keywords: Keyword[]; gscSnapshots: GscSnapshot[] }) {
   const [search, setSearch] = useState('')
   const [diffFilter, setDiffFilter] = useState<string>('all')
 
   const totalVolume = keywords.reduce((s, k) => s + (k.volume || 0), 0)
   const totalClicks = keywords.reduce((s, k) => s + (k.gsc_clicks || 0), 0)
-  const _totalImpressions = keywords.reduce((s, k) => s + (k.gsc_impressions || 0), 0)
+  // reserved for GSC chart
+  // const totalImpressions = keywords.reduce((s, k) => s + (k.gsc_impressions || 0), 0)
   const rankedKws = keywords.filter(k => k.gsc_position)
   const avgPosition = rankedKws.length > 0
     ? (rankedKws.reduce((s, k) => s + (k.gsc_position || 0), 0) / rankedKws.length).toFixed(1)
