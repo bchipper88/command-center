@@ -12,9 +12,11 @@ type QueryBuilder = {
 }
 
 function createQueryBuilder(table: string): QueryBuilder {
-  let url = `${SUPABASE_URL}/rest/v1/${table}`
+  const url = `${SUPABASE_URL}/rest/v1/${table}`
   const params = new URLSearchParams()
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let selectCols = '*'
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let isSingle = false
 
   const builder: QueryBuilder = {
