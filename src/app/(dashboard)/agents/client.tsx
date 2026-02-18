@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
@@ -178,12 +179,14 @@ export function AgentsClient({ agents }: Props) {
                     <CardContent className="p-5">
                       <div className="flex items-start gap-4">
                         {/* Avatar */}
-                        <div className={`${tier === 'command' ? 'w-20 h-20' : 'w-16 h-16'} rounded-full overflow-hidden bg-white/5 flex-shrink-0`}>
+                        <div className={`${tier === 'command' ? 'w-20 h-20' : 'w-16 h-16'} rounded-full overflow-hidden bg-white/5 flex-shrink-0 relative`}>
                           {agent.avatar?.startsWith('http') ? (
-                            <img 
+                            <Image 
                               src={agent.avatar} 
                               alt={agent.name}
-                              className="w-full h-full object-cover"
+                              fill
+                              className="object-cover"
+                              unoptimized
                             />
                           ) : (
                             <div className={`w-full h-full flex items-center justify-center ${tier === 'command' ? 'text-4xl' : 'text-3xl'}`}>
