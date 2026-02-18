@@ -1,20 +1,31 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js'
+import { createClient } from '@supabase/supabase-js'
 
-let _supabase: SupabaseClient | null = null
+// Lazy singleton - only created when first accessed at runtime
+let _client: ReturnType<typeof createClient> | null = null
 
-export const supabase = new Proxy({} as SupabaseClient, {
-  get(_, prop) {
-    if (!_supabase) {
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-      if (!supabaseUrl || !supabaseAnonKey) {
-        throw new Error('Supabase env vars not configured')
-      }
-      _supabase = createClient(supabaseUrl, supabaseAnonKey)
+function getClient() {
+  if (!_client) {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    if (!url || !key) {
+      throw new Error('Missing Supabase environment variables')
     }
-    return (_supabase as SupabaseClient)[prop as keyof SupabaseClient]
+    _client = createClient(url, key)
   }
-})
+  return _client
+}
+
+// Export object with getter that lazily initializes
+export const supabase = {
+  from: (...args: Parameters<ReturnType<typeof createClient>['from']>) => getClient().from(...args),
+  auth: new Proxy({} as ReturnType<typeof createClient>['auth'], {
+    get: (_, prop) => (getClient().auth as Record<string, unknown>)[prop as string]
+  }),
+  storage: new Proxy({} as ReturnType<typeof createClient>['storage'], {
+    get: (_, prop) => (getClient().storage as Record<string, unknown>)[prop as string]
+  }),
+  rpc: (...args: Parameters<ReturnType<typeof createClient>['rpc']>) => getClient().rpc(...args),
+}
 
 export type Site = {
   id: string
