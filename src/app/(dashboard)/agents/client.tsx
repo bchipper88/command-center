@@ -178,8 +178,18 @@ export function AgentsClient({ agents }: Props) {
                     <CardContent className="p-5">
                       <div className="flex items-start gap-4">
                         {/* Avatar */}
-                        <div className={`text-4xl ${tier === 'command' ? 'text-5xl' : ''}`}>
-                          {agent.avatar || '🤖'}
+                        <div className={`${tier === 'command' ? 'w-20 h-20' : 'w-16 h-16'} rounded-full overflow-hidden bg-white/5 flex-shrink-0`}>
+                          {agent.avatar?.startsWith('http') ? (
+                            <img 
+                              src={agent.avatar} 
+                              alt={agent.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className={`w-full h-full flex items-center justify-center ${tier === 'command' ? 'text-4xl' : 'text-3xl'}`}>
+                              {agent.avatar || '🤖'}
+                            </div>
+                          )}
                         </div>
                         
                         {/* Info */}
