@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase'
+import { supabase, Keyword } from '@/lib/supabase'
 import { DashboardClient } from './dashboard-client'
 
 export const dynamic = 'force-dynamic'
@@ -16,7 +16,7 @@ async function getData() {
     supabase.from('sites').select('*'),
     supabase.from('businesses').select('id, site_id, category'),
     supabase.from('blog_posts').select('id, site_id, status'),
-    supabase.from('keywords').select('id, site_id, gsc_clicks'),
+    supabase.from('keywords').select('id, site_id, gsc_clicks') as unknown as { data: Pick<Keyword, 'id' | 'site_id' | 'gsc_clicks'>[] | null },
     supabase.from('cron_jobs').select('*').order('updated_at', { ascending: false }).limit(20),
     supabase.from('activity_log').select('*').order('created_at', { ascending: false }).limit(20),
     supabase.from('gsc_snapshots').select('*').order('date', { ascending: false }).limit(30),

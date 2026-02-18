@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase'
+import { supabase, Keyword, GscSnapshot } from '@/lib/supabase'
 import { SEOClient } from './seo-client'
 import { notFound } from 'next/navigation'
 
@@ -12,8 +12,8 @@ export default async function SEOPage({ params }: { params: { siteId: string } }
     { data: keywords },
     { data: gscSnapshots },
   ] = await Promise.all([
-    supabase.from('keywords').select('*').eq('site_id', siteId).order('volume', { ascending: false }),
-    supabase.from('gsc_snapshots').select('*').eq('site_id', siteId).order('date', { ascending: true }).limit(90),
+    supabase.from('keywords').select('*').eq('site_id', siteId).order('volume', { ascending: false }) as unknown as { data: Keyword[] | null },
+    supabase.from('gsc_snapshots').select('*').eq('site_id', siteId).order('date', { ascending: true }).limit(90) as unknown as { data: GscSnapshot[] | null },
   ])
 
   return <SEOClient siteId={siteId} keywords={keywords || []} gscSnapshots={gscSnapshots || []} />
