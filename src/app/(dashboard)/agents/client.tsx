@@ -7,88 +7,42 @@ import { Badge } from '@/components/ui/badge'
 type Agent = {
   id: string
   name: string
-  description: string | null
-  schedule: string | null
-  enabled: boolean
-  last_run_at: string | null
-  next_run_at: string | null
-  last_status: string | null
-  last_duration_ms: number | null
-  consecutive_errors: number
-  payload_preview: string | null
-  updated_at: string
+  codename: string | null
+  role: string
+  tier: string
+  site_id: string | null
+  source: string | null
+  soul: string | null
+  avatar: string | null
+  status: string | null
+  tasks_completed: number
+  messages_sent: number
+  last_active_at: string | null
+  created_at: string
 }
 
 type Props = {
   agents: Agent[]
 }
 
-// Categorize agents by their purpose
-function categorizeAgent(name: string): string {
-  if (name.includes('blog') || name.includes('content')) return 'content'
-  if (name.includes('seo') || name.includes('gsc') || name.includes('rank')) return 'seo'
-  if (name.includes('directory') || name.includes('business') || name.includes('subcategory')) return 'directories'
-  if (name.includes('dino') || name.includes('jurassic') || name.includes('shopify')) return 'jurassic'
-  if (name.includes('job') || name.includes('saas') || name.includes('research')) return 'research'
-  if (name.includes('briefing') || name.includes('checkin') || name.includes('productivity') || name.includes('goals') || name.includes('review')) return 'productivity'
-  if (name.includes('security') || name.includes('audit') || name.includes('update')) return 'system'
-  return 'other'
+const tierConfig: Record<string, { label: string; color: string; border: string }> = {
+  command: { label: 'Supreme Command', color: 'text-red-400', border: 'border-red-500/30' },
+  ceo: { label: 'Domain Lords', color: 'text-amber-400', border: 'border-amber-500/30' },
+  operative: { label: 'Specialized Operatives', color: 'text-blue-400', border: 'border-blue-500/30' },
 }
 
-const categoryConfig: Record<string, { label: string; color: string; icon: string }> = {
-  content: { label: 'Content Creation', color: 'text-purple-400 border-purple-500/30 bg-purple-500/10', icon: '📝' },
-  seo: { label: 'SEO & Analytics', color: 'text-amber-400 border-amber-500/30 bg-amber-500/10', icon: '🔍' },
-  directories: { label: 'Directory Sites', color: 'text-blue-400 border-blue-500/30 bg-blue-500/10', icon: '🗂️' },
-  jurassic: { label: 'Jurassic Apparel', color: 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10', icon: '🦕' },
-  research: { label: 'Research & Ideas', color: 'text-pink-400 border-pink-500/30 bg-pink-500/10', icon: '💡' },
-  productivity: { label: 'Productivity', color: 'text-cyan-400 border-cyan-500/30 bg-cyan-500/10', icon: '⚡' },
-  system: { label: 'System & Security', color: 'text-red-400 border-red-500/30 bg-red-500/10', icon: '🔒' },
-  other: { label: 'Other', color: 'text-neutral-400 border-neutral-500/30 bg-neutral-500/10', icon: '⚙️' },
+const statusConfig: Record<string, { label: string; color: string; dot: string }> = {
+  active: { label: 'Active', color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30', dot: 'bg-emerald-500' },
+  idle: { label: 'Idle', color: 'bg-neutral-500/20 text-neutral-400 border-neutral-500/30', dot: 'bg-neutral-500' },
+  sleeping: { label: 'Sleeping', color: 'bg-purple-500/20 text-purple-400 border-purple-500/30', dot: 'bg-purple-500' },
+  summoned: { label: 'Summoned', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30', dot: 'bg-amber-500 animate-pulse' },
 }
 
-function parseSchedule(schedule: string | null): string {
-  if (!schedule) return 'No schedule'
-  
-  // Handle "every Xh" or "every Xd"
-  if (schedule.startsWith('every ')) {
-    const match = schedule.match(/every (\d+)([hd])/)
-    if (match) {
-      const [, num, unit] = match
-      return `Every ${num}${unit === 'h' ? ' hours' : ' days'}`
-    }
-    return schedule
-  }
-  
-  // Handle cron expressions
-  if (schedule.includes('cron ')) {
-    const parts = schedule.replace('cron ', '').split(' ')
-    const [min, hour, dayMonth, month, dayWeek] = parts
-    
-    // Parse time
-    const hourNum = parseInt(hour)
-    const minNum = parseInt(min)
-    const time = `${hourNum > 12 ? hourNum - 12 : hourNum || 12}:${minNum.toString().padStart(2, '0')} ${hourNum >= 12 ? 'PM' : 'AM'}`
-    
-    // Determine frequency
-    if (dayWeek === '0') return `Sundays @ ${time}`
-    if (dayWeek === '1') return `Mondays @ ${time}`
-    if (dayMonth === '1') return `1st of month @ ${time}`
-    if (dayMonth === '*' && month === '*' && dayWeek === '*') return `Daily @ ${time}`
-    
-    return `${time} MT`
-  }
-  
-  return schedule
-}
-
-function getStatusConfig(status: string | null, errors: number) {
-  if (errors > 0) return { label: 'Error', color: 'bg-red-500/20 text-red-400 border-red-500/30' }
-  switch (status) {
-    case 'ok': return { label: 'OK', color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' }
-    case 'idle': return { label: 'Idle', color: 'bg-neutral-500/20 text-neutral-400 border-neutral-500/30' }
-    case 'running': return { label: 'Running', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' }
-    default: return { label: status || 'Unknown', color: 'bg-neutral-500/20 text-neutral-400 border-neutral-500/30' }
-  }
+const siteLabels: Record<string, string> = {
+  jurassic: 'Jurassic Apparel',
+  lv: 'Lehigh Valley',
+  denver: 'Denver',
+  savannah: 'Savannah',
 }
 
 function timeAgo(date: string | null): string {
@@ -101,50 +55,56 @@ function timeAgo(date: string | null): string {
   return `${Math.floor(seconds / 604800)}w ago`
 }
 
-function formatName(name: string): string {
-  return name
-    .split('-')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ')
+function extractSoulSection(soul: string | null, section: string): string | null {
+  if (!soul) return null
+  const regex = new RegExp(`# ${section}\\n([\\s\\S]*?)(?=\\n# |$)`, 'i')
+  const match = soul.match(regex)
+  return match ? match[1].trim() : null
+}
+
+function getSoulPreview(soul: string | null): string {
+  if (!soul) return 'No soul defined.'
+  // Get first paragraph after # IDENTITY
+  const identity = extractSoulSection(soul, 'IDENTITY')
+  if (identity) {
+    const firstPara = identity.split('\n\n')[0]
+    return firstPara.slice(0, 200) + (firstPara.length > 200 ? '...' : '')
+  }
+  return soul.slice(0, 200) + '...'
 }
 
 export function AgentsClient({ agents }: Props) {
+  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null)
   const [filter, setFilter] = useState<string | null>(null)
-  
-  // Group agents by category
-  const grouped = agents.reduce((acc, agent) => {
-    const category = categorizeAgent(agent.name)
-    if (!acc[category]) acc[category] = []
-    acc[category].push(agent)
+
+  // Group agents by tier
+  const tiers = ['command', 'ceo', 'operative']
+  const grouped = tiers.reduce((acc, tier) => {
+    acc[tier] = agents.filter(a => a.tier === tier)
     return acc
   }, {} as Record<string, Agent[]>)
 
-  const categories = Object.keys(grouped).sort((a, b) => {
-    const order = ['productivity', 'content', 'jurassic', 'directories', 'seo', 'research', 'system', 'other']
-    return order.indexOf(a) - order.indexOf(b)
-  })
-
-  const filteredCategories = filter ? categories.filter(c => c === filter) : categories
+  const filteredTiers = filter ? tiers.filter(t => t === filter) : tiers
 
   const totalAgents = agents.length
-  const enabledAgents = agents.filter(a => a.enabled).length
-  const okAgents = agents.filter(a => a.last_status === 'ok').length
-  const errorAgents = agents.filter(a => a.consecutive_errors > 0).length
+  const activeAgents = agents.filter(a => a.status === 'active').length
+  const ceoCount = agents.filter(a => a.tier === 'ceo').length
+  const operativeCount = agents.filter(a => a.tier === 'operative').length
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Agents Overview</h1>
-        <p className="text-sm text-neutral-500 font-mono">All automated tasks and scheduled jobs</p>
+        <h1 className="text-2xl font-bold text-white">The Dark Lord&apos;s Court</h1>
+        <p className="text-sm text-neutral-500 font-mono">Agents serving the empire</p>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
           { label: 'TOTAL AGENTS', value: totalAgents, color: 'text-white' },
-          { label: 'ENABLED', value: enabledAgents, color: 'text-emerald-400' },
-          { label: 'HEALTHY', value: okAgents, color: 'text-blue-400' },
-          { label: 'ERRORS', value: errorAgents, color: errorAgents > 0 ? 'text-red-400' : 'text-neutral-600' },
+          { label: 'ACTIVE NOW', value: activeAgents, color: 'text-emerald-400' },
+          { label: 'DOMAIN LORDS', value: ceoCount, color: 'text-amber-400' },
+          { label: 'OPERATIVES', value: operativeCount, color: 'text-blue-400' },
         ].map(stat => (
           <Card key={stat.label} className="glass-card bg-transparent border-white/5">
             <CardContent className="pt-4 pb-3 px-4">
@@ -155,7 +115,7 @@ export function AgentsClient({ agents }: Props) {
         ))}
       </div>
 
-      {/* Category filters */}
+      {/* Tier filters */}
       <div className="flex flex-wrap gap-2">
         <button
           onClick={() => setFilter(null)}
@@ -167,99 +127,110 @@ export function AgentsClient({ agents }: Props) {
         >
           All ({totalAgents})
         </button>
-        {categories.map(cat => {
-          const config = categoryConfig[cat]
-          const count = grouped[cat].length
+        {tiers.map(tier => {
+          const config = tierConfig[tier]
+          const count = grouped[tier]?.length || 0
           return (
             <button
-              key={cat}
-              onClick={() => setFilter(filter === cat ? null : cat)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${
-                filter === cat
-                  ? `${config.color} border`
+              key={tier}
+              onClick={() => setFilter(filter === tier ? null : tier)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                filter === tier
+                  ? `bg-white/10 ${config.color} border ${config.border}`
                   : 'text-neutral-500 hover:text-white hover:bg-white/5'
               }`}
             >
-              <span>{config.icon}</span>
               {config.label} ({count})
             </button>
           )
         })}
       </div>
 
-      {/* Agent cards by category */}
-      {filteredCategories.map(category => {
-        const config = categoryConfig[category]
-        const categoryAgents = grouped[category]
+      {/* Agent cards by tier */}
+      {filteredTiers.map(tier => {
+        const config = tierConfig[tier]
+        const tierAgents = grouped[tier] || []
+        if (tierAgents.length === 0) return null
         
         return (
-          <div key={category} className="space-y-3">
+          <div key={tier} className="space-y-3">
             <div className="flex items-center gap-2">
-              <span className="text-lg">{config.icon}</span>
-              <h2 className="text-sm font-mono text-neutral-400 tracking-wider uppercase">{config.label}</h2>
-              <span className="text-xs text-neutral-600">({categoryAgents.length})</span>
+              <h2 className={`text-sm font-mono tracking-wider uppercase ${config.color}`}>
+                {config.label}
+              </h2>
+              <span className="text-xs text-neutral-600">({tierAgents.length})</span>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              {categoryAgents.map(agent => {
-                const status = getStatusConfig(agent.last_status, agent.consecutive_errors)
+            <div className={`grid gap-4 ${
+              tier === 'command' ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-2'
+            }`}>
+              {tierAgents.map(agent => {
+                const status = statusConfig[agent.status || 'idle']
                 
                 return (
                   <Card 
                     key={agent.id} 
-                    className={`glass-card bg-transparent border-white/5 hover:border-white/10 transition-all ${
-                      !agent.enabled ? 'opacity-50' : ''
+                    className={`glass-card bg-transparent border-white/5 hover:border-white/10 transition-all cursor-pointer ${
+                      tier === 'command' ? 'border-red-500/20' : ''
                     }`}
+                    onClick={() => setSelectedAgent(selectedAgent?.id === agent.id ? null : agent)}
                   >
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between gap-2 mb-3">
-                        <div className="min-w-0">
-                          <h3 className="text-sm font-semibold text-white truncate">
-                            {formatName(agent.name)}
-                          </h3>
-                          <p className="text-xs text-neutral-500 font-mono mt-0.5">
-                            {parseSchedule(agent.schedule)}
+                    <CardContent className="p-5">
+                      <div className="flex items-start gap-4">
+                        {/* Avatar */}
+                        <div className={`text-4xl ${tier === 'command' ? 'text-5xl' : ''}`}>
+                          {agent.avatar || '🤖'}
+                        </div>
+                        
+                        {/* Info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className={`font-bold ${tier === 'command' ? 'text-xl text-red-400' : 'text-lg text-white'}`}>
+                              {agent.name}
+                            </h3>
+                            <Badge variant="outline" className={`text-[10px] ${status.color}`}>
+                              <span className={`w-1.5 h-1.5 rounded-full mr-1 ${status.dot}`}></span>
+                              {status.label}
+                            </Badge>
+                          </div>
+                          
+                          <div className="flex items-center gap-2 text-sm text-neutral-400 mb-2">
+                            <span className="font-medium">{agent.codename}</span>
+                            {agent.site_id && (
+                              <>
+                                <span className="text-neutral-600">•</span>
+                                <span className="text-neutral-500">{siteLabels[agent.site_id] || agent.site_id}</span>
+                              </>
+                            )}
+                            {agent.source && (
+                              <>
+                                <span className="text-neutral-600">•</span>
+                                <span className="text-neutral-600 text-xs">{agent.source}</span>
+                              </>
+                            )}
+                          </div>
+                          
+                          <p className="text-sm text-neutral-500 leading-relaxed">
+                            {getSoulPreview(agent.soul)}
                           </p>
+                          
+                          {/* Stats row */}
+                          <div className="flex items-center gap-4 mt-3 text-xs text-neutral-600">
+                            <span>Tasks: <span className="text-neutral-400">{agent.tasks_completed}</span></span>
+                            <span>Messages: <span className="text-neutral-400">{agent.messages_sent}</span></span>
+                            <span>Last active: <span className="text-neutral-400">{timeAgo(agent.last_active_at)}</span></span>
+                          </div>
                         </div>
-                        <Badge 
-                          variant="outline" 
-                          className={`text-[10px] shrink-0 ${status.color}`}
-                        >
-                          {status.label}
-                        </Badge>
                       </div>
                       
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-neutral-600">Last run</span>
-                        <span className="text-neutral-400 font-mono">
-                          {timeAgo(agent.last_run_at)}
-                        </span>
-                      </div>
-                      
-                      {agent.last_duration_ms && (
-                        <div className="flex items-center justify-between text-xs mt-1">
-                          <span className="text-neutral-600">Duration</span>
-                          <span className="text-neutral-400 font-mono">
-                            {agent.last_duration_ms > 60000 
-                              ? `${(agent.last_duration_ms / 60000).toFixed(1)}m`
-                              : `${(agent.last_duration_ms / 1000).toFixed(1)}s`
-                            }
-                          </span>
-                        </div>
-                      )}
-                      
-                      {agent.consecutive_errors > 0 && (
-                        <div className="flex items-center justify-between text-xs mt-1">
-                          <span className="text-red-600">Errors</span>
-                          <span className="text-red-400 font-mono">
-                            {agent.consecutive_errors} consecutive
-                          </span>
-                        </div>
-                      )}
-                      
-                      {!agent.enabled && (
-                        <div className="mt-2 pt-2 border-t border-white/5">
-                          <span className="text-[10px] text-neutral-600 uppercase tracking-wider">Disabled</span>
+                      {/* Expanded soul view */}
+                      {selectedAgent?.id === agent.id && agent.soul && (
+                        <div className="mt-4 pt-4 border-t border-white/5">
+                          <div className="prose prose-invert prose-sm max-w-none">
+                            <pre className="whitespace-pre-wrap text-xs text-neutral-400 bg-black/20 p-4 rounded-lg overflow-x-auto font-mono">
+                              {agent.soul}
+                            </pre>
+                          </div>
                         </div>
                       )}
                     </CardContent>
