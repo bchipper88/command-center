@@ -92,16 +92,11 @@ export function AgentsClient({ agents }: Props) {
   const ceoCount = agents.filter(a => a.tier === 'ceo').length
   const operativeCount = agents.filter(a => a.tier === 'operative').length
 
-  // Debug: Log first agent avatar
-console.log('First agent avatar:', agents[0]?.avatar)
-
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white">The Dark Lord&apos;s Court</h1>
         <p className="text-sm text-neutral-500 font-mono">Agents serving the empire</p>
-        {/* Debug: Show avatar data */}
-        <p className="text-xs text-red-400 font-mono mt-1">Debug: {agents.length} agents, first avatar: {agents[0]?.avatar?.substring(0, 60) || 'NONE'}</p>
       </div>
 
       {/* Stats */}
