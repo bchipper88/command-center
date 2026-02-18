@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase'
+import { supabase, Business } from '@/lib/supabase'
 import { BusinessesClient } from './businesses-client'
 import { notFound, redirect } from 'next/navigation'
 
@@ -16,7 +16,7 @@ export default async function BusinessesPage({ params }: { params: { siteId: str
     .select('*')
     .eq('site_id', siteId)
     .order('category')
-    .order('score', { ascending: false })
+    .order('score', { ascending: false }) as unknown as { data: Business[] | null }
 
   return <BusinessesClient siteId={siteId} businesses={businesses || []} />
 }

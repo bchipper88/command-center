@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase'
+import { supabase, BlogPost } from '@/lib/supabase'
 import { ContentClient } from './content-client'
 import { notFound } from 'next/navigation'
 
@@ -12,7 +12,7 @@ export default async function ContentPage({ params }: { params: { siteId: string
     .from('blog_posts')
     .select('*')
     .eq('site_id', siteId)
-    .order('created_at', { ascending: false })
+    .order('created_at', { ascending: false }) as unknown as { data: BlogPost[] | null }
 
   return <ContentClient siteId={siteId} blogPosts={blogPosts || []} />
 }
