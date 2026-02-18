@@ -23,9 +23,10 @@ function PositionBadge({ pos }: { pos: number | null }) {
   return <span className={`font-mono font-bold ${color}`}>{pos.toFixed(1)}</span>
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function SEOClient({ siteId, keywords, gscSnapshots }: { siteId: string; keywords: Keyword[]; gscSnapshots: GscSnapshot[] }) {
   // Debug: log what data we received
-  console.log('[SEOClient] siteId:', siteId, '| keywords received:', keywords.length, keywords.slice(0, 2))
+  console.log('[SEOClient] siteId:', siteId, '| keywords received:', keywords.length, keywords.slice(0, 2), '| gsc:', gscSnapshots.length)
   const [search, setSearch] = useState('')
   const [diffFilter, setDiffFilter] = useState<string>('all')
 
