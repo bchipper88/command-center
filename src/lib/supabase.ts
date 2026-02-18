@@ -19,10 +19,10 @@ function getClient() {
 export const supabase = {
   from: (...args: Parameters<ReturnType<typeof createClient>['from']>) => getClient().from(...args),
   auth: new Proxy({} as ReturnType<typeof createClient>['auth'], {
-    get: (_, prop) => (getClient().auth as Record<string, unknown>)[prop as string]
+    get: (_, prop) => (getClient().auth as unknown as Record<string, unknown>)[prop as string]
   }),
   storage: new Proxy({} as ReturnType<typeof createClient>['storage'], {
-    get: (_, prop) => (getClient().storage as Record<string, unknown>)[prop as string]
+    get: (_, prop) => (getClient().storage as unknown as Record<string, unknown>)[prop as string]
   }),
   rpc: (...args: Parameters<ReturnType<typeof createClient>['rpc']>) => getClient().rpc(...args),
 }
