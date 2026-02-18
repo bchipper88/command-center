@@ -1,32 +1,11 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js'
+import { createClient } from '@supabase/supabase-js'
 
-// Lazy singleton - defers client creation to runtime
-let _client: SupabaseClient | null = null
+// Use placeholder during build, real values at runtime
+// The placeholder passes validation but won't be used (pages are force-dynamic)
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key'
 
-function getClient(): SupabaseClient {
-  if (!_client) {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    if (!url || !key) {
-      throw new Error('Missing Supabase environment variables')
-    }
-    _client = createClient(url, key)
-  }
-  return _client
-}
-
-// Re-export with lazy init - simpler approach using getter
-export const supabase = new Proxy({} as SupabaseClient, {
-  get(_, prop: keyof SupabaseClient) {
-    const client = getClient()
-    const value = client[prop]
-    // Bind methods to preserve 'this' context
-    if (typeof value === 'function') {
-      return value.bind(client)
-    }
-    return value
-  }
-})
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 export type Site = {
   id: string
