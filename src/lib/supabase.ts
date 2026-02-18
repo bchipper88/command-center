@@ -12,7 +12,7 @@ export const supabase = new Proxy({} as SupabaseClient, {
       }
       _supabase = createClient(supabaseUrl, supabaseAnonKey)
     }
-    return (_supabase as any)[prop]
+    return (_supabase as SupabaseClient)[prop as keyof SupabaseClient]
   }
 })
 
