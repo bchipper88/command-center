@@ -43,7 +43,7 @@ export function DirectoriesOverviewClient({ sites: siteData, businesses, blogPos
 
   const totalVolume = siteKeywords.reduce((sum, k) => sum + (k.volume || 0), 0)
   const totalClicks = siteKeywords.reduce((sum, k) => sum + (k.gsc_clicks || 0), 0)
-  const categories = [...new Set(siteBusinesses.map(b => b.category))]
+  const categories = Array.from(new Set(siteBusinesses.map(b => b.category))]
 
   return (
     <div className="space-y-6">

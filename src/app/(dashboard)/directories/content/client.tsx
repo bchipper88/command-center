@@ -30,7 +30,7 @@ export function DirectoriesContentClient({ blogPosts }: { blogPosts: BlogPost[] 
   const [statusFilter, setStatusFilter] = useState('all')
 
   const sitePosts = blogPosts.filter(p => p.site_id === activeSite)
-  const statuses = [...new Set(sitePosts.map(p => p.status))]
+  const statuses = Array.from(new Set(sitePosts.map(p => p.status)))
   
   const filtered = statusFilter === 'all' 
     ? sitePosts 

@@ -21,7 +21,7 @@ const statusColors: Record<string, string> = {
 export function JurassicContentClient({ blogPosts }: { blogPosts: BlogPost[] }) {
   const [statusFilter, setStatusFilter] = useState('all')
 
-  const statuses = [...new Set(blogPosts.map(p => p.status))]
+  const statuses = Array.from(new Set(blogPosts.map(p => p.status)))
   const filtered = statusFilter === 'all' ? blogPosts : blogPosts.filter(p => p.status === statusFilter)
   const totalVolume = blogPosts.reduce((sum, p) => sum + (p.keyword_volume || 0), 0)
 

@@ -23,7 +23,7 @@ export function DirectoriesBusinessesClient({ businesses }: { businesses: Busine
   const [categoryFilter, setCategoryFilter] = useState('all')
 
   const siteBusinesses = businesses.filter(b => b.site_id === activeSite)
-  const categories = [...new Set(siteBusinesses.map(b => b.category))].sort()
+  const categories = Array.from(new Set(siteBusinesses.map(b => b.category))).sort()
 
   const filtered = siteBusinesses.filter(b => {
     if (search && !b.name.toLowerCase().includes(search.toLowerCase())) return false
