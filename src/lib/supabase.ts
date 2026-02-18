@@ -1,9 +1,9 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
-// Lazy singleton - only created when first accessed at runtime
-let _client: ReturnType<typeof createClient> | null = null
+// Lazy singleton - defers client creation to runtime
+let _client: SupabaseClient | null = null
 
-function getClient() {
+function getClient(): SupabaseClient {
   if (!_client) {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL
     const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -15,17 +15,18 @@ function getClient() {
   return _client
 }
 
-// Export object with getter that lazily initializes
-export const supabase = {
-  from: (...args: Parameters<ReturnType<typeof createClient>['from']>) => getClient().from(...args),
-  auth: new Proxy({} as ReturnType<typeof createClient>['auth'], {
-    get: (_, prop) => (getClient().auth as unknown as Record<string, unknown>)[prop as string]
-  }),
-  storage: new Proxy({} as ReturnType<typeof createClient>['storage'], {
-    get: (_, prop) => (getClient().storage as unknown as Record<string, unknown>)[prop as string]
-  }),
-  rpc: (...args: Parameters<ReturnType<typeof createClient>['rpc']>) => getClient().rpc(...args),
-}
+// Re-export with lazy init - simpler approach using getter
+export const supabase = new Proxy({} as SupabaseClient, {
+  get(_, prop: keyof SupabaseClient) {
+    const client = getClient()
+    const value = client[prop]
+    // Bind methods to preserve 'this' context
+    if (typeof value === 'function') {
+      return value.bind(client)
+    }
+    return value
+  }
+})
 
 export type Site = {
   id: string
