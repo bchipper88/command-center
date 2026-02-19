@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
+import { ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react'
 import type { Keyword, GscSnapshot } from '@/lib/supabase'
 
 const siteChartColors: Record<string, string> = {
@@ -14,10 +15,18 @@ const siteChartColors: Record<string, string> = {
   jurassic: '#ef4444',
 }
 
+type SortKey = 'keyword' | 'site_id' | 'volume' | 'gsc_position' | 'gsc_impressions' | 'gsc_clicks' | 'gsc_ctr'
+type SortDir = 'asc' | 'desc'
+
 function PositionBadge({ pos }: { pos: number | null }) {
   if (!pos) return <span className="text-neutral-600">—</span>
   const color = pos <= 3 ? 'text-emerald-400' : pos <= 10 ? 'text-amber-400' : pos <= 20 ? 'text-orange-400' : 'text-red-400'
   return <span className={`font-mono font-bold ${color}`}>{pos.toFixed(1)}</span>
+}
+
+function SortIcon({ column, sortKey, sortDir }: { column: SortKey; sortKey: SortKey; sortDir: SortDir }) {
+  if (column !== sortKey) return <ChevronsUpDown className="w-3 h-3 opacity-30" />
+  return sortDir === 'asc' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />
 }
 
 export function SeoClient({ keywords, sites, gscSnapshots }: {
@@ -26,8 +35,32 @@ export function SeoClient({ keywords, sites, gscSnapshots }: {
   gscSnapshots: GscSnapshot[]
 }) {
   const [siteFilter, setSiteFilter] = useState<string>('all')
+  const [sortKey, setSortKey] = useState<SortKey>('gsc_impressions')
+  const [sortDir, setSortDir] = useState<SortDir>('desc')
 
-  const filtered = keywords.filter(k => siteFilter === 'all' || k.site_id === siteFilter)
+  const handleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDir(sortDir === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortKey(key)
+      setSortDir('desc')
+    }
+  }
+
+  const filtered = useMemo(() => {
+    return keywords
+      .filter(k => siteFilter === 'all' || k.site_id === siteFilter)
+      .sort((a, b) => {
+        const aVal = a[sortKey] ?? (sortDir === 'asc' ? Infinity : -Infinity)
+        const bVal = b[sortKey] ?? (sortDir === 'asc' ? Infinity : -Infinity)
+        
+        if (typeof aVal === 'string' && typeof bVal === 'string') {
+          return sortDir === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal)
+        }
+        
+        return sortDir === 'asc' ? (aVal as number) - (bVal as number) : (bVal as number) - (aVal as number)
+      })
+  }, [keywords, siteFilter, sortKey, sortDir])
 
   // Prepare chart data: group snapshots by date, one line per site
   const chartData = useMemo(() => {
@@ -44,6 +77,18 @@ export function SeoClient({ keywords, sites, gscSnapshots }: {
   const avgPosition = keywords.filter(k => k.gsc_position).length > 0
     ? (keywords.reduce((s, k) => s + (k.gsc_position || 0), 0) / keywords.filter(k => k.gsc_position).length).toFixed(1)
     : '—'
+
+  const SortableHeader = ({ column, label, align = 'left' }: { column: SortKey; label: string; align?: 'left' | 'right' }) => (
+    <TableHead 
+      className={`text-neutral-500 font-mono text-xs cursor-pointer hover:text-neutral-300 transition-colors select-none ${align === 'right' ? 'text-right' : ''}`}
+      onClick={() => handleSort(column)}
+    >
+      <div className={`flex items-center gap-1 ${align === 'right' ? 'justify-end' : ''}`}>
+        {label}
+        <SortIcon column={column} sortKey={sortKey} sortDir={sortDir} />
+      </div>
+    </TableHead>
+  )
 
   return (
     <div className="space-y-6">
@@ -110,14 +155,14 @@ export function SeoClient({ keywords, sites, gscSnapshots }: {
           <Table>
             <TableHeader>
               <TableRow className="border-white/5 hover:bg-transparent">
-                <TableHead className="text-neutral-500 font-mono text-xs">KEYWORD</TableHead>
-                <TableHead className="text-neutral-500 font-mono text-xs">SITE</TableHead>
-                <TableHead className="text-neutral-500 font-mono text-xs text-right">VOL</TableHead>
+                <SortableHeader column="keyword" label="KEYWORD" />
+                <SortableHeader column="site_id" label="SITE" />
+                <SortableHeader column="volume" label="VOL" align="right" />
                 <TableHead className="text-neutral-500 font-mono text-xs">DIFF</TableHead>
-                <TableHead className="text-neutral-500 font-mono text-xs text-right">POS</TableHead>
-                <TableHead className="text-neutral-500 font-mono text-xs text-right">IMPR</TableHead>
-                <TableHead className="text-neutral-500 font-mono text-xs text-right">CLICKS</TableHead>
-                <TableHead className="text-neutral-500 font-mono text-xs text-right">CTR</TableHead>
+                <SortableHeader column="gsc_position" label="POS" align="right" />
+                <SortableHeader column="gsc_impressions" label="IMPR" align="right" />
+                <SortableHeader column="gsc_clicks" label="CLICKS" align="right" />
+                <SortableHeader column="gsc_ctr" label="CTR" align="right" />
               </TableRow>
             </TableHeader>
             <TableBody>
