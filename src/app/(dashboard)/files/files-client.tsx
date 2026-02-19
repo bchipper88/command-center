@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import type { SourceFile } from '@/lib/supabase'
+import { supabase, type SourceFile } from '@/lib/supabase'
 
 function groupByCategory(files: SourceFile[]) {
   const groups: Record<string, SourceFile[]> = {}
@@ -19,15 +19,35 @@ function fileName(path: string) {
   return path.split('/').pop() || path
 }
 
-export function FilesClient({ files }: { files: SourceFile[] }) {
-  const [selected, setSelected] = useState<SourceFile | null>(files[0] || null)
+export function FilesClient() {
+  const [files, setFiles] = useState<SourceFile[]>([])
+  const [selected, setSelected] = useState<SourceFile | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchFiles() {
+      const { data, error } = await supabase
+        .from('source_files')
+        .select('*')
+        .order('path')
+      if (data) {
+        setFiles(data)
+        setSelected(data[0] || null)
+      }
+      setLoading(false)
+    }
+    fetchFiles()
+  }, [])
+
   const groups = groupByCategory(files)
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white">Source Files</h1>
-        <p className="text-sm text-neutral-500 font-mono">{files.length} files cached</p>
+        <p className="text-sm text-neutral-500 font-mono">
+          {loading ? 'Loading...' : `${files.length} files cached`}
+        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 h-[calc(100vh-200px)]">
@@ -35,7 +55,9 @@ export function FilesClient({ files }: { files: SourceFile[] }) {
         <Card className="glass-card bg-transparent border-white/5 lg:col-span-1">
           <ScrollArea className="h-full">
             <div className="p-3 space-y-4">
-              {files.length === 0 ? (
+              {loading ? (
+                <p className="text-neutral-600 text-sm font-mono">Loading files...</p>
+              ) : files.length === 0 ? (
                 <p className="text-neutral-600 text-sm font-mono">No files synced. Run seed script.</p>
               ) : (
                 Object.entries(groups).sort().map(([cat, catFiles]) => (
@@ -81,7 +103,7 @@ export function FilesClient({ files }: { files: SourceFile[] }) {
               </div>
             ) : (
               <div className="flex items-center justify-center h-full text-neutral-600 font-mono text-sm">
-                Select a file to view
+                {loading ? 'Loading...' : 'Select a file to view'}
               </div>
             )}
           </ScrollArea>
