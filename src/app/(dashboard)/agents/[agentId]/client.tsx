@@ -1,10 +1,11 @@
 'use client'
 
+import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, ChevronDown, ChevronRight } from 'lucide-react'
 
 type Agent = {
   id: string
@@ -74,6 +75,7 @@ function formatDate(date: string): string {
 }
 
 export function AgentDetailClient({ agent, activities }: { agent: Agent; activities: Activity[] }) {
+  const [soulExpanded, setSoulExpanded] = useState(false)
   const status = statusConfig[agent.status || 'idle']
   const tierColor = tierColors[agent.tier] || 'text-white'
   
@@ -156,16 +158,26 @@ export function AgentDetailClient({ agent, activities }: { agent: Agent; activit
         </Card>
       </div>
 
-      {/* Soul section */}
+      {/* Soul section - collapsible */}
       {agent.soul && (
         <Card className="bg-transparent border-white/10">
           <CardContent className="p-6">
-            <h2 className="text-lg font-bold text-white mb-4">Soul</h2>
-            <div className="prose prose-invert prose-sm max-w-none">
-              <pre className="whitespace-pre-wrap text-sm text-neutral-400 bg-black/30 p-4 rounded-lg overflow-x-auto font-mono leading-relaxed">
-                {agent.soul}
-              </pre>
-            </div>
+            <button
+              onClick={() => setSoulExpanded(!soulExpanded)}
+              className="w-full flex items-center justify-between text-left group"
+            >
+              <h2 className="text-lg font-bold text-white">Soul</h2>
+              <span className="text-neutral-500 group-hover:text-white transition-colors">
+                {soulExpanded ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
+              </span>
+            </button>
+            {soulExpanded && (
+              <div className="prose prose-invert prose-sm max-w-none mt-4">
+                <pre className="whitespace-pre-wrap text-sm text-neutral-400 bg-black/30 p-4 rounded-lg overflow-x-auto font-mono leading-relaxed">
+                  {agent.soul}
+                </pre>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
