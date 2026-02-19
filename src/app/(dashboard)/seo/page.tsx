@@ -9,7 +9,7 @@ export default async function SeoPage() {
     { data: sites },
     { data: gscSnapshots }
   ] = await Promise.all([
-    supabase.from('keywords').select('*').order('gsc_clicks', { ascending: false, nullsFirst: false }),
+    supabase.from('keywords').select('*').not('gsc_position', 'is', null).order('gsc_impressions', { ascending: false }).limit(1000),
     supabase.from('sites').select('id, name'),
     supabase.from('gsc_snapshots').select('*').order('date', { ascending: true })
   ])
