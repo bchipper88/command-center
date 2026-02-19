@@ -40,31 +40,59 @@ export function IdeasClient({ ideas: initialIdeas }: { ideas: CeoIdea[] }) {
     : ideas.filter(i => i.status === filter)
 
   const handleApprove = async (idea: CeoIdea) => {
-    // Create a task for the agent in the kanban
-    const siteContext = idea.site_id ? ` [${siteNames[idea.site_id] || idea.site_id}]` : ''
-    await supabase.from('tasks').insert({
-      title: idea.title + siteContext,
-      description: idea.description,
-      status: 'todo',
-      assigned_to: idea.agent_name,
-      priority: idea.priority || 'medium',
-    })
+    try {
+      // Create a task for the agent in the kanban
+      const siteContext = idea.site_id ? ` [${siteNames[idea.site_id] || idea.site_id}]` : ''
+      const { error: taskError } = await supabase.from('tasks').insert({
+        title: idea.title + siteContext,
+        description: idea.description,
+        status: 'todo',
+        assigned_to: idea.agent_name,
+        priority: idea.priority || 'medium',
+      })
+      
+      if (taskError) {
+        console.error('Task insert error:', taskError)
+        alert(`Failed to create task: ${taskError.message}`)
+        return
+      }
 
-    // Update idea status to approved
-    await supabase
-      .from('ceo_ideas')
-      .update({ status: 'approved', updated_at: new Date().toISOString() })
-      .eq('id', idea.id)
-    
-    setIdeas(ideas.map(i => i.id === idea.id ? { ...i, status: 'approved' } : i))
+      // Update idea status to approved
+      const { error: updateError } = await supabase
+        .from('ceo_ideas')
+        .update({ status: 'approved', updated_at: new Date().toISOString() })
+        .eq('id', idea.id)
+      
+      if (updateError) {
+        console.error('Idea update error:', updateError)
+        alert(`Failed to update idea: ${updateError.message}`)
+        return
+      }
+      
+      setIdeas(ideas.map(i => i.id === idea.id ? { ...i, status: 'approved' } : i))
+    } catch (err) {
+      console.error('Approve error:', err)
+      alert(`Error: ${err}`)
+    }
   }
 
   const handleReject = async (id: string) => {
-    // Delete the idea
-    await supabase.from('ceo_ideas').delete().eq('id', id)
-    
-    // Remove from local state
-    setIdeas(ideas.filter(i => i.id !== id))
+    try {
+      // Delete the idea
+      const { error } = await supabase.from('ceo_ideas').delete().eq('id', id)
+      
+      if (error) {
+        console.error('Delete error:', error)
+        alert(`Failed to delete: ${error.message}`)
+        return
+      }
+      
+      // Remove from local state
+      setIdeas(ideas.filter(i => i.id !== id))
+    } catch (err) {
+      console.error('Reject error:', err)
+      alert(`Error: ${err}`)
+    }
   }
 
   const proposedCount = ideas.filter(i => i.status === 'proposed').length
