@@ -13,6 +13,7 @@ const doNav = [
 const monitorNav = [
   { href: '/sites', label: 'Sites', icon: '🌐' },
   { href: '/agents', label: 'Agents', icon: '🤖' },
+  { href: '/comms', label: 'Agent Comms', icon: '💬' },
   { href: '/ops', label: 'Cron Jobs', icon: '⚙️' },
 ]
 
