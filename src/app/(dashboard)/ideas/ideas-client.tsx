@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { supabase, CeoIdea } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Lightbulb, Check, X } from 'lucide-react'
-import Image from 'next/image'
 
 const statusColors: Record<string, string> = {
   proposed: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
@@ -97,10 +96,10 @@ export function IdeasClient({ ideas: initialIdeas }: { ideas: CeoIdea[] }) {
 
   const proposedCount = ideas.filter(i => i.status === 'proposed').length
 
-  const getAvatarUrl = (agentName: string) => {
-    const name = agentName.toLowerCase()
-    return `/avatars/${name}.png`
-  }
+  // Known agents with avatars
+  const agentsWithAvatars = ['bellatrix', 'severus', 'jovie', 'regulus', 'lucius', 'skeeter', 'narcissa', 'andromeda', 'lockhart', 'jarvis', 'varys']
+  
+  const getInitials = (name: string) => name.slice(0, 2).toUpperCase()
 
   return (
     <div className="space-y-6">
@@ -151,19 +150,17 @@ export function IdeasClient({ ideas: initialIdeas }: { ideas: CeoIdea[] }) {
               <div className="flex items-start gap-4 mb-3">
                 {/* Agent Avatar */}
                 <div className="flex-shrink-0">
-                  <div className="w-10 h-10 rounded-full overflow-hidden bg-zinc-700 ring-2 ring-zinc-600">
-                    <Image
-                      src={getAvatarUrl(idea.agent_name)}
+                  {agentsWithAvatars.includes(idea.agent_name.toLowerCase()) ? (
+                    <img
+                      src={`/avatars/${idea.agent_name.toLowerCase()}.png`}
                       alt={idea.agent_name}
-                      width={40}
-                      height={40}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        // Fallback to initials on error
-                        e.currentTarget.style.display = 'none'
-                      }}
+                      className="w-10 h-10 rounded-full object-cover ring-2 ring-zinc-600"
                     />
-                  </div>
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-zinc-600 to-zinc-700 ring-2 ring-zinc-600 flex items-center justify-center text-xs font-bold text-zinc-300">
+                      {getInitials(idea.agent_name)}
+                    </div>
+                  )}
                 </div>
 
                 {/* Content */}
