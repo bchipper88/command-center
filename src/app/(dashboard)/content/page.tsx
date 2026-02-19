@@ -13,7 +13,7 @@ export default async function ContentPage() {
       .select('*')
       .order('created_at', { ascending: false })
       .limit(100) as unknown as { data: BlogPost[] | null },
-    supabase.from('sites').select('id, name') as unknown as { data: Pick<Site, 'id' | 'name'>[] | null },
+    supabase.from('sites').select('id, name, domain') as unknown as { data: Pick<Site, 'id' | 'name' | 'domain'>[] | null },
   ])
 
   return <ContentClient posts={posts || []} sites={sites || []} />

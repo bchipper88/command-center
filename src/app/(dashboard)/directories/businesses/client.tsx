@@ -4,12 +4,13 @@ import { useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { ExternalLink } from 'lucide-react'
 
-const sites = [
-  { id: 'lv', label: 'Lehigh Valley', color: 'bg-blue-500', borderColor: 'border-blue-500/30' },
-  { id: 'denver', label: 'Denver', color: 'bg-purple-500', borderColor: 'border-purple-500/30' },
-  { id: 'savannah', label: 'Savannah', color: 'bg-emerald-500', borderColor: 'border-emerald-500/30' },
-]
+type Site = {
+  id: string
+  name: string
+  domain: string | null
+}
 
 type Business = {
   id: string; site_id: string; slug: string; name: string; category: string;
@@ -17,10 +18,25 @@ type Business = {
   google_review_count: number | null; featured: boolean; score: number | null
 }
 
-export function DirectoriesBusinessesClient({ businesses }: { businesses: Business[] }) {
-  const [activeSite, setActiveSite] = useState('lv')
+const siteColors: Record<string, { color: string; borderColor: string }> = {
+  lv: { color: 'bg-blue-500', borderColor: 'border-blue-500/30' },
+  denver: { color: 'bg-purple-500', borderColor: 'border-purple-500/30' },
+  savannah: { color: 'bg-emerald-500', borderColor: 'border-emerald-500/30' },
+}
+
+export function DirectoriesBusinessesClient({ businesses, sites }: { businesses: Business[]; sites: Site[] }) {
+  const [activeSite, setActiveSite] = useState(sites[0]?.id || 'lv')
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('all')
+
+  const getSite = (siteId: string) => sites.find(s => s.id === siteId)
+  
+  const getBusinessUrl = (business: Business) => {
+    const site = getSite(business.site_id)
+    if (!site?.domain) return null
+    // Directory sites typically use /category/slug pattern
+    return `https://${site.domain}/${business.category.toLowerCase().replace(/\s+/g, '-')}/${business.slug}`
+  }
 
   const siteBusinesses = businesses.filter(b => b.site_id === activeSite)
   const categories = Array.from(new Set(siteBusinesses.map(b => b.category))).sort()
@@ -42,18 +58,19 @@ export function DirectoriesBusinessesClient({ businesses }: { businesses: Busine
       <div className="flex gap-2">
         {sites.map((s) => {
           const count = businesses.filter(b => b.site_id === s.id).length
+          const colors = siteColors[s.id] || { color: 'bg-gray-500', borderColor: 'border-gray-500/30' }
           return (
             <button
               key={s.id}
               onClick={() => { setActiveSite(s.id); setCategoryFilter('all') }}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 activeSite === s.id
-                  ? `bg-white/10 text-white border ${s.borderColor}`
+                  ? `bg-white/10 text-white border ${colors.borderColor}`
                   : 'text-neutral-500 hover:text-white hover:bg-white/5'
               }`}
             >
-              <span className={`inline-block w-2 h-2 rounded-full ${s.color} mr-2`}></span>
-              {s.label}
+              <span className={`inline-block w-2 h-2 rounded-full ${colors.color} mr-2`}></span>
+              {s.name}
               <span className="ml-2 text-neutral-600">({count})</span>
             </button>
           )
@@ -120,29 +137,44 @@ export function DirectoriesBusinessesClient({ businesses }: { businesses: Busine
                   </TableCell>
                 </TableRow>
               ) : (
-                filtered.slice(0, 100).map(b => (
-                  <TableRow key={b.id} className="border-white/5 hover:bg-white/5">
-                    <TableCell className="text-white text-sm">
-                      {b.name}
-                      {b.featured && <Badge className="ml-2 bg-amber-500/20 text-amber-400 text-[10px]">Featured</Badge>}
-                    </TableCell>
-                    <TableCell className="text-neutral-400 text-sm">{b.category}</TableCell>
-                    <TableCell className="text-neutral-400 text-sm">{b.city || '—'}</TableCell>
-                    <TableCell className="text-right">
-                      {b.google_rating ? (
-                        <span className={b.google_rating >= 4.5 ? 'text-emerald-400' : 'text-neutral-300'}>
-                          ★ {b.google_rating.toFixed(1)}
-                        </span>
-                      ) : '—'}
-                    </TableCell>
-                    <TableCell className="text-right text-neutral-400 font-mono text-sm">
-                      {b.google_review_count?.toLocaleString() || '—'}
-                    </TableCell>
-                    <TableCell className="text-right font-mono text-sm text-neutral-300">
-                      {b.score?.toFixed(0) || '—'}
-                    </TableCell>
-                  </TableRow>
-                ))
+                filtered.slice(0, 100).map(b => {
+                  const url = getBusinessUrl(b)
+                  return (
+                    <TableRow key={b.id} className="border-white/5 hover:bg-white/5">
+                      <TableCell className="text-white text-sm">
+                        {url ? (
+                          <a 
+                            href={url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="group flex items-center gap-1 hover:text-orange-400 transition-colors"
+                          >
+                            {b.name}
+                            <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </a>
+                        ) : (
+                          b.name
+                        )}
+                        {b.featured && <Badge className="ml-2 bg-amber-500/20 text-amber-400 text-[10px]">Featured</Badge>}
+                      </TableCell>
+                      <TableCell className="text-neutral-400 text-sm">{b.category}</TableCell>
+                      <TableCell className="text-neutral-400 text-sm">{b.city || '—'}</TableCell>
+                      <TableCell className="text-right">
+                        {b.google_rating ? (
+                          <span className={b.google_rating >= 4.5 ? 'text-emerald-400' : 'text-neutral-300'}>
+                            ★ {b.google_rating.toFixed(1)}
+                          </span>
+                        ) : '—'}
+                      </TableCell>
+                      <TableCell className="text-right text-neutral-400 font-mono text-sm">
+                        {b.google_review_count?.toLocaleString() || '—'}
+                      </TableCell>
+                      <TableCell className="text-right font-mono text-sm text-neutral-300">
+                        {b.score?.toFixed(0) || '—'}
+                      </TableCell>
+                    </TableRow>
+                  )
+                })
               )}
             </TableBody>
           </Table>

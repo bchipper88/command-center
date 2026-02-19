@@ -3,9 +3,9 @@
 import { useState } from 'react'
 import { BlogPost, Site } from '@/lib/supabase'
 import { useSearchParams } from 'next/navigation'
-import { FileText } from 'lucide-react'
+import { FileText, ExternalLink } from 'lucide-react'
 
-export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick<Site, 'id' | 'name'>[] }) {
+export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick<Site, 'id' | 'name' | 'domain'>[] }) {
   const searchParams = useSearchParams()
   const initialSite = searchParams.get('site') || 'all'
   const [selectedSite, setSelectedSite] = useState(initialSite)
@@ -19,7 +19,14 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
     return matchesSite && matchesSearch
   })
 
-  const getSiteName = (siteId: string) => sites.find(s => s.id === siteId)?.name || 'Unknown'
+  const getSite = (siteId: string) => sites.find(s => s.id === siteId)
+  const getSiteName = (siteId: string) => getSite(siteId)?.name || 'Unknown'
+  
+  const getPostUrl = (post: BlogPost) => {
+    const site = getSite(post.site_id)
+    if (!site?.domain) return null
+    return `https://${site.domain}/${post.slug}`
+  }
 
   const statusColors: Record<string, string> = {
     published: 'bg-green-500/20 text-green-400',
@@ -74,32 +81,52 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800">
-              {filteredPosts.map((post) => (
-                <tr key={post.id} className="hover:bg-zinc-800/30">
-                  <td className="p-4">
-                    <p className="font-medium text-white truncate max-w-xs">{post.title}</p>
-                    <p className="text-xs text-zinc-500 truncate max-w-xs">/{post.slug}</p>
-                  </td>
-                  <td className="p-4 text-sm text-zinc-400">{getSiteName(post.site_id)}</td>
-                  <td className="p-4 text-sm text-zinc-400">
-                    {post.target_keyword || '-'}
-                    {post.keyword_volume && (
-                      <span className="text-xs text-zinc-500 ml-1">({post.keyword_volume})</span>
-                    )}
-                  </td>
-                  <td className="p-4">
-                    <span className={`text-xs px-2 py-1 rounded ${statusColors[post.status] || 'bg-zinc-700 text-zinc-400'}`}>
-                      {post.status}
-                    </span>
-                  </td>
-                  <td className="p-4 text-sm text-zinc-500">
-                    {post.published_at 
-                      ? new Date(post.published_at).toLocaleDateString()
-                      : new Date(post.created_at).toLocaleDateString()
-                    }
-                  </td>
-                </tr>
-              ))}
+              {filteredPosts.map((post) => {
+                const url = getPostUrl(post)
+                return (
+                  <tr key={post.id} className="hover:bg-zinc-800/30">
+                    <td className="p-4">
+                      {url ? (
+                        <a 
+                          href={url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="group"
+                        >
+                          <p className="font-medium text-white truncate max-w-xs group-hover:text-orange-400 transition-colors flex items-center gap-1">
+                            {post.title}
+                            <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </p>
+                          <p className="text-xs text-zinc-500 truncate max-w-xs group-hover:text-zinc-400">/{post.slug}</p>
+                        </a>
+                      ) : (
+                        <>
+                          <p className="font-medium text-white truncate max-w-xs">{post.title}</p>
+                          <p className="text-xs text-zinc-500 truncate max-w-xs">/{post.slug}</p>
+                        </>
+                      )}
+                    </td>
+                    <td className="p-4 text-sm text-zinc-400">{getSiteName(post.site_id)}</td>
+                    <td className="p-4 text-sm text-zinc-400">
+                      {post.target_keyword || '-'}
+                      {post.keyword_volume && (
+                        <span className="text-xs text-zinc-500 ml-1">({post.keyword_volume})</span>
+                      )}
+                    </td>
+                    <td className="p-4">
+                      <span className={`text-xs px-2 py-1 rounded ${statusColors[post.status] || 'bg-zinc-700 text-zinc-400'}`}>
+                        {post.status}
+                      </span>
+                    </td>
+                    <td className="p-4 text-sm text-zinc-500">
+                      {post.published_at 
+                        ? new Date(post.published_at).toLocaleDateString()
+                        : new Date(post.created_at).toLocaleDateString()
+                      }
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>
