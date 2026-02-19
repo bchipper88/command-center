@@ -18,10 +18,11 @@ const monitorNav = [
 
 const exploreNav = [
   { href: '/content', label: 'Content', icon: '📝' },
-  { href: '/businesses', label: 'Businesses', icon: '🏢' },
+  { href: '/directories/businesses', label: 'Businesses', icon: '🏢' },
   { href: '/seo', label: 'SEO', icon: '🔍' },
   { href: '/reviews', label: 'Reviews', icon: '📊' },
   { href: '/files', label: 'Files', icon: '📁' },
+  { href: '/christmas', label: 'Christmas', icon: '🎄' },
 ]
 
 export function Shell({ children }: { children: ReactNode }) {
