@@ -25,6 +25,11 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
   const getPostUrl = (post: BlogPost) => {
     const site = getSite(post.site_id)
     if (!site?.domain) return null
+    // URL format: /{category}/blog/{slug}
+    if (post.category) {
+      return `https://${site.domain}/${post.category}/blog/${post.slug}`
+    }
+    // Fallback for posts without category
     return `https://${site.domain}/blog/${post.slug}`
   }
 
