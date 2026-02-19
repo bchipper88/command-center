@@ -143,3 +143,19 @@ export type Task = {
   updated_at: string
   completed_at: string | null
 }
+
+export type CeoIdea = {
+  id: string
+  site_id: string | null
+  agent_name: string
+  title: string
+  description: string | null
+  category: string | null
+  impact_score: number | null
+  effort_score: number | null
+  status: 'proposed' | 'approved' | 'rejected' | 'implemented'
+  john_rating: number | null
+  john_feedback: string | null
+  created_at: string
+  updated_at: string
+}

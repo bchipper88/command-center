@@ -4,37 +4,24 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { ReactNode } from 'react'
 
-const directoriesNav = [
-  { href: '/directories/overview', label: 'Overview', icon: '📊' },
-  { href: '/directories/content', label: 'Content', icon: '📝' },
-  { href: '/directories/businesses', label: 'Businesses', icon: '🏢' },
-  { href: '/directories/seo', label: 'SEO', icon: '🔍' },
-  { href: '/reviews?site=directories', label: 'CEO Reviews', icon: '📋' },
-]
-
-const jurassicNav = [
-  { href: '/jurassic', label: 'Overview', icon: '📊' },
-  { href: '/jurassic/content', label: 'Content', icon: '📝' },
-  { href: '/jurassic/seo', label: 'SEO', icon: '🔍' },
-  { href: '/reviews?site=jurassic', label: 'CEO Reviews', icon: '📋' },
-]
-
-const agentsNav = [
-  { href: '/agents', label: 'Overview', icon: '🤖' },
+const doNav = [
   { href: '/tasks', label: 'Tasks', icon: '📋' },
-  { href: '/ops', label: 'Operations', icon: '⚙️' },
+  { href: '/prs', label: 'PRs to Review', icon: '🔀' },
+  { href: '/ideas', label: 'Ideas', icon: '💡' },
+]
+
+const monitorNav = [
+  { href: '/sites', label: 'Sites', icon: '🌐' },
+  { href: '/agents', label: 'Agents', icon: '🤖' },
+  { href: '/ops', label: 'Cron Jobs', icon: '⚙️' },
+]
+
+const exploreNav = [
+  { href: '/content', label: 'Content', icon: '📝' },
+  { href: '/businesses', label: 'Businesses', icon: '🏢' },
+  { href: '/seo', label: 'SEO', icon: '🔍' },
+  { href: '/reviews', label: 'Reviews', icon: '📊' },
   { href: '/files', label: 'Files', icon: '📁' },
-]
-
-const metaNav = [
-  { href: '/reviews?site=command-center', label: 'Product Reviews', icon: '📋' },
-  { href: '/reviews', label: 'All Reviews', icon: '📊' },
-]
-
-const christmasNav = [
-  { href: '/christmas', label: 'Overview', icon: '📊' },
-  { href: '/christmas/pages', label: 'Page Grades', icon: '📝' },
-  { href: '/reviews?site=christmas', label: 'CEO Reviews', icon: '📋' },
 ]
 
 export function Shell({ children }: { children: ReactNode }) {
@@ -47,7 +34,7 @@ export function Shell({ children }: { children: ReactNode }) {
 
   const linkClass = (href: string) => `flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
     isActive(href)
-      ? 'bg-red-600/10 text-red-500 border border-red-500/20'
+      ? 'bg-orange-600/10 text-orange-500 border border-orange-500/20'
       : 'text-neutral-400 hover:text-white hover:bg-white/5'
   }`
 
@@ -60,7 +47,7 @@ export function Shell({ children }: { children: ReactNode }) {
             <span className="text-xl">🏰</span>
             <div>
               <h1 className="text-sm font-bold text-white tracking-wider">COMMAND CENTER</h1>
-              <p className="text-[10px] text-neutral-600 font-mono">v1.0 • OPERATIONAL</p>
+              <p className="text-[10px] text-neutral-600 font-mono">v2.0 • ROLE-BASED</p>
             </div>
           </div>
         </Link>
@@ -68,65 +55,50 @@ export function Shell({ children }: { children: ReactNode }) {
         <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
           {/* Dashboard */}
           <Link href="/" className={linkClass('/')}>
-            <span className="text-base">📊</span>
+            <span className="text-base">🎯</span>
             <span className="font-medium">Dashboard</span>
           </Link>
 
-          {/* Directories section */}
+          {/* DO section */}
           <div className="pt-4 pb-1 px-3">
-            <span className="text-[10px] font-mono text-neutral-600 tracking-widest uppercase">Directories</span>
+            <span className="text-[10px] font-mono text-orange-600/60 tracking-widest uppercase">Do</span>
           </div>
-          {directoriesNav.map((item) => (
+          {doNav.map((item) => (
             <Link key={item.href} href={item.href} className={linkClass(item.href)}>
               <span className="text-base">{item.icon}</span>
               <span className="font-medium">{item.label}</span>
             </Link>
           ))}
 
-          {/* Jurassic Apparel section */}
+          {/* MONITOR section */}
           <div className="pt-4 pb-1 px-3">
-            <span className="text-[10px] font-mono text-neutral-600 tracking-widest uppercase">Jurassic Apparel</span>
+            <span className="text-[10px] font-mono text-blue-600/60 tracking-widest uppercase">Monitor</span>
           </div>
-          {jurassicNav.map((item) => (
+          {monitorNav.map((item) => (
             <Link key={item.href} href={item.href} className={linkClass(item.href)}>
               <span className="text-base">{item.icon}</span>
               <span className="font-medium">{item.label}</span>
             </Link>
           ))}
 
-          {/* Agents section */}
+          {/* EXPLORE section */}
           <div className="pt-4 pb-1 px-3">
-            <span className="text-[10px] font-mono text-neutral-600 tracking-widest uppercase">Agents</span>
+            <span className="text-[10px] font-mono text-green-600/60 tracking-widest uppercase">Explore</span>
           </div>
-          {agentsNav.map((item) => (
-            <Link key={item.href} href={item.href} className={linkClass(item.href)}>
-              <span className="text-base">{item.icon}</span>
-              <span className="font-medium">{item.label}</span>
-            </Link>
-          ))}
-
-          {/* The Best Christmas section */}
-          <div className="pt-4 pb-1 px-3">
-            <span className="text-[10px] font-mono text-neutral-600 tracking-widest uppercase">The Best Christmas</span>
-          </div>
-          {christmasNav.map((item) => (
-            <Link key={item.href} href={item.href} className={linkClass(item.href)}>
-              <span className="text-base">{item.icon}</span>
-              <span className="font-medium">{item.label}</span>
-            </Link>
-          ))}
-
-          {/* Meta / Product section */}
-          <div className="pt-4 pb-1 px-3">
-            <span className="text-[10px] font-mono text-neutral-600 tracking-widest uppercase">Command Center</span>
-          </div>
-          {metaNav.map((item) => (
+          {exploreNav.map((item) => (
             <Link key={item.href} href={item.href} className={linkClass(item.href)}>
               <span className="text-base">{item.icon}</span>
               <span className="font-medium">{item.label}</span>
             </Link>
           ))}
         </nav>
+
+        {/* Footer */}
+        <div className="p-3 border-t border-white/5">
+          <div className="text-[10px] text-neutral-600 font-mono">
+            Mission: Financial Independence
+          </div>
+        </div>
       </aside>
 
       {/* Main */}
