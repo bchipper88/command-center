@@ -26,7 +26,7 @@ export function FilesClient() {
 
   useEffect(() => {
     async function fetchFiles() {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('source_files')
         .select('*')
         .order('path')
