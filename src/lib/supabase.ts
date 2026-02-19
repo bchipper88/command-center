@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
 
-// Use placeholder during build, real values at runtime
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBsYWNlaG9sZGVyIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NDUxOTI4MjQsImV4cCI6MTk2MDc2ODgyNH0.placeholder'
+// Hardcoded for reliability - Command Center Supabase
+const supabaseUrl = 'https://heetkfaggxclbwfrmhln.supabase.co'
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhlZXRrZmFnZ3hjbGJ3ZnJtaGxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzNjIzNjQsImV4cCI6MjA4NjkzODM2NH0.j1LnNkyIbzLilRIePf4qD90lcKhksdQNnkF81IIcQxc'
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
@@ -114,4 +114,32 @@ export type GscSnapshot = {
   avg_position: number | null
   avg_ctr: number | null
   created_at: string
+}
+
+export type CeoReview = {
+  id: string
+  site_id: string
+  agent_id: string | null
+  agent_name: string
+  review_date: string
+  summary: string
+  wins: string[]
+  challenges: string[]
+  metrics: string | null
+  ideas: string | null
+  status: string
+  created_at: string
+  updated_at: string
+}
+
+export type Task = {
+  id: string
+  title: string
+  description: string | null
+  status: 'todo' | 'in_progress' | 'blocked' | 'done'
+  assigned_to: string
+  priority: 'low' | 'medium' | 'high'
+  created_at: string
+  updated_at: string
+  completed_at: string | null
 }

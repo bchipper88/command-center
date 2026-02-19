@@ -9,18 +9,31 @@ const directoriesNav = [
   { href: '/directories/content', label: 'Content', icon: '📝' },
   { href: '/directories/businesses', label: 'Businesses', icon: '🏢' },
   { href: '/directories/seo', label: 'SEO', icon: '🔍' },
+  { href: '/reviews?site=directories', label: 'CEO Reviews', icon: '📋' },
 ]
 
 const jurassicNav = [
   { href: '/jurassic', label: 'Overview', icon: '📊' },
   { href: '/jurassic/content', label: 'Content', icon: '📝' },
   { href: '/jurassic/seo', label: 'SEO', icon: '🔍' },
+  { href: '/reviews?site=jurassic', label: 'CEO Reviews', icon: '📋' },
 ]
 
 const agentsNav = [
   { href: '/agents', label: 'Overview', icon: '🤖' },
   { href: '/ops', label: 'Operations', icon: '⚙️' },
   { href: '/files', label: 'Files', icon: '📁' },
+]
+
+const metaNav = [
+  { href: '/reviews?site=command-center', label: 'Product Reviews', icon: '📋' },
+  { href: '/reviews', label: 'All Reviews', icon: '📊' },
+]
+
+const christmasNav = [
+  { href: '/christmas', label: 'Overview', icon: '📊' },
+  { href: '/christmas/pages', label: 'Page Grades', icon: '📝' },
+  { href: '/reviews?site=christmas', label: 'CEO Reviews', icon: '📋' },
 ]
 
 export function Shell({ children }: { children: ReactNode }) {
@@ -85,6 +98,28 @@ export function Shell({ children }: { children: ReactNode }) {
             <span className="text-[10px] font-mono text-neutral-600 tracking-widest uppercase">Agents</span>
           </div>
           {agentsNav.map((item) => (
+            <Link key={item.href} href={item.href} className={linkClass(item.href)}>
+              <span className="text-base">{item.icon}</span>
+              <span className="font-medium">{item.label}</span>
+            </Link>
+          ))}
+
+          {/* The Best Christmas section */}
+          <div className="pt-4 pb-1 px-3">
+            <span className="text-[10px] font-mono text-neutral-600 tracking-widest uppercase">The Best Christmas</span>
+          </div>
+          {christmasNav.map((item) => (
+            <Link key={item.href} href={item.href} className={linkClass(item.href)}>
+              <span className="text-base">{item.icon}</span>
+              <span className="font-medium">{item.label}</span>
+            </Link>
+          ))}
+
+          {/* Meta / Product section */}
+          <div className="pt-4 pb-1 px-3">
+            <span className="text-[10px] font-mono text-neutral-600 tracking-widest uppercase">Command Center</span>
+          </div>
+          {metaNav.map((item) => (
             <Link key={item.href} href={item.href} className={linkClass(item.href)}>
               <span className="text-base">{item.icon}</span>
               <span className="font-medium">{item.label}</span>

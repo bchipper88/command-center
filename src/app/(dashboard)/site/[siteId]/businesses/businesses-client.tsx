@@ -10,7 +10,15 @@ const siteNames: Record<string, string> = { lv: 'Lehigh Valley', denver: 'Denver
 type Business = {
   id: string; name: string; slug: string; category: string; subcategory: string | null;
   city: string | null; google_rating: number | null; google_review_count: number | null;
-  score: number | null; featured: boolean; website: string | null
+  score: number | null; featured: boolean; website: string | null; added_at: string
+}
+
+function formatDate(date: string) {
+  return new Date(date).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
 }
 
 function HeatmapCell({ count }: { count: number }) {
@@ -122,7 +130,7 @@ export function BusinessesClient({ siteId, businesses }: { siteId: string; busin
                 <TableHead className="text-neutral-500 font-mono text-xs">CITY</TableHead>
                 <TableHead className="text-neutral-500 font-mono text-xs text-right">RATING</TableHead>
                 <TableHead className="text-neutral-500 font-mono text-xs text-right">REVIEWS</TableHead>
-                <TableHead className="text-neutral-500 font-mono text-xs text-right">SCORE</TableHead>
+                <TableHead className="text-neutral-500 font-mono text-xs text-right">ADDED</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -157,8 +165,8 @@ export function BusinessesClient({ siteId, businesses }: { siteId: string; busin
                     <TableCell className="text-right font-mono text-xs text-neutral-400">
                       {b.google_review_count?.toLocaleString() || '—'}
                     </TableCell>
-                    <TableCell className="text-right font-mono text-xs text-neutral-400">
-                      {b.score?.toFixed(1) || '—'}
+                    <TableCell className="text-right font-mono text-xs text-neutral-500">
+                      {formatDate(b.added_at)}
                     </TableCell>
                   </TableRow>
                 ))

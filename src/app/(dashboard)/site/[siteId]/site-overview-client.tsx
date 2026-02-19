@@ -1,7 +1,9 @@
 'use client'
 
 import Link from 'next/link'
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { ChevronDown, ChevronRight } from 'lucide-react'
 
 const siteNames: Record<string, string> = {
   lv: 'Lehigh Valley',
@@ -17,12 +19,27 @@ const siteDomains: Record<string, string> = {
   jurassic: 'jurassicapparel.shop',
 }
 
+const agentEmojis: Record<string, string> = {
+  Regulus: '🐍',
+  Molly: '🧣',
+  Lucius: '🦚',
+  Hermione: '📚',
+}
+
 function timeAgo(date: string) {
   const seconds = Math.floor((Date.now() - new Date(date).getTime()) / 1000)
   if (seconds < 60) return `${seconds}s ago`
   if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`
   if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`
   return `${Math.floor(seconds / 86400)}d ago`
+}
+
+function formatDate(date: string) {
+  return new Date(date).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
 }
 
 const eventIcons: Record<string, string> = {
@@ -34,17 +51,39 @@ const eventIcons: Record<string, string> = {
   rank_change: '📈',
 }
 
+type CeoReview = {
+  id: string
+  site_id: string
+  agent_name: string
+  review_date: string
+  summary: string
+  wins: string[]
+  challenges: string[]
+}
+
+type Business = {
+  id: string
+  name: string
+  category: string
+  subcategory?: string | null
+  added_at: string
+  city?: string | null
+  google_rating?: number | null
+}
+
 type Props = {
   siteId: string
   site: Record<string, unknown> | null
-  businesses: Array<{ category: string; subcategory?: string | null }>
+  businesses: Business[]
   blogPosts: Array<{ status: string }>
   keywords: Array<{ gsc_clicks?: number | null; gsc_position?: number | null }>
   activity: Array<{ id: string; event_type: string; title: string; description?: string | null; created_at: string }>
+  latestReview?: CeoReview | null
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function SiteOverviewClient({ siteId, site, businesses, blogPosts, keywords, activity }: Props) {
+export function SiteOverviewClient({ siteId, site, businesses, blogPosts, keywords, activity, latestReview }: Props) {
+  const [businessesExpanded, setBusinessesExpanded] = useState(false)
   const isDirectory = siteId !== 'jurassic'
 
   // Category breakdown
@@ -80,6 +119,9 @@ export function SiteOverviewClient({ siteId, site, businesses, blogPosts, keywor
         { label: 'AVG POSITION', value: avgPosition, icon: '🎯', color: 'text-red-400' },
       ]
 
+  // Recent businesses (last 10)
+  const recentBusinesses = businesses.slice(0, 10)
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -109,6 +151,28 @@ export function SiteOverviewClient({ siteId, site, businesses, blogPosts, keywor
         </div>
       </div>
 
+      {/* Latest CEO Review */}
+      {latestReview && (
+        <Card className="glass-card bg-gradient-to-br from-purple-900/20 to-transparent border-purple-500/20">
+          <CardContent className="pt-5 pb-4 px-5">
+            <div className="flex items-start gap-3 mb-3">
+              <span className="text-2xl">{agentEmojis[latestReview.agent_name] || '👤'}</span>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-sm font-bold text-purple-300">{latestReview.agent_name}&apos;s Review</span>
+                  <span className="text-xs text-neutral-500 font-mono">{formatDate(latestReview.review_date)}</span>
+                </div>
+                <p className="text-sm text-neutral-300 leading-relaxed">{latestReview.summary}</p>
+              </div>
+            </div>
+            <Link href={`/reviews`}
+              className="text-xs text-purple-400 hover:text-purple-300 font-mono transition-colors">
+              View all reviews →
+            </Link>
+          </CardContent>
+        </Card>
+      )}
+
       {/* KPI Cards */}
       <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4`}>
         {kpis.map((kpi) => (
@@ -127,6 +191,54 @@ export function SiteOverviewClient({ siteId, site, businesses, blogPosts, keywor
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Collapsible Businesses (directories only) */}
+        {isDirectory && businesses.length > 0 && (
+          <Card className="glass-card bg-transparent border-white/5">
+            <CardHeader className="pb-3">
+              <button
+                onClick={() => setBusinessesExpanded(!businessesExpanded)}
+                className="flex items-center gap-2 w-full text-left"
+              >
+                {businessesExpanded ? (
+                  <ChevronDown className="w-4 h-4 text-neutral-400" />
+                ) : (
+                  <ChevronRight className="w-4 h-4 text-neutral-400" />
+                )}
+                <CardTitle className="text-sm font-mono text-neutral-400 tracking-wider">
+                  RECENT BUSINESSES ({businesses.length} total)
+                </CardTitle>
+              </button>
+            </CardHeader>
+            {businessesExpanded && (
+              <CardContent className="space-y-2 max-h-80 overflow-y-auto">
+                {recentBusinesses.map((biz) => (
+                  <div key={biz.id} className="flex items-center gap-3 p-2 rounded hover:bg-white/5 transition-colors">
+                    <span className="text-base">🏢</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-white truncate">{biz.name}</p>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-neutral-500">{biz.category}</span>
+                        {biz.google_rating && (
+                          <span className="text-xs text-amber-400">★ {biz.google_rating}</span>
+                        )}
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-mono text-neutral-600 whitespace-nowrap">
+                      {formatDate(biz.added_at)}
+                    </span>
+                  </div>
+                ))}
+                {businesses.length > 10 && (
+                  <Link href={`/site/${siteId}/businesses`}
+                    className="block text-center text-xs text-blue-400 hover:text-blue-300 font-mono py-2 transition-colors">
+                    View all {businesses.length} businesses →
+                  </Link>
+                )}
+              </CardContent>
+            )}
+          </Card>
+        )}
+
         {/* Category Breakdown (directories only) */}
         {isDirectory && sortedCategories.length > 0 && (
           <Card className="glass-card bg-transparent border-white/5">

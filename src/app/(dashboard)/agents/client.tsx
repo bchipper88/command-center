@@ -163,7 +163,7 @@ export function AgentsClient({ agents }: Props) {
             </div>
             
             <div className={`grid gap-4 ${
-              tier === 'command' ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-2'
+              tier === 'command' ? 'grid-cols-1 max-w-2xl' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
             }`}>
               {tierAgents.map(agent => {
                 const status = statusConfig[agent.status || 'idle']
@@ -171,69 +171,62 @@ export function AgentsClient({ agents }: Props) {
                 return (
                   <Card 
                     key={agent.id} 
-                    className={`glass-card bg-transparent border-white/5 hover:border-white/10 transition-all cursor-pointer ${
+                    className={`glass-card bg-transparent border-white/5 hover:border-white/10 transition-all cursor-pointer overflow-hidden ${
                       tier === 'command' ? 'border-red-500/20' : ''
                     }`}
                     onClick={() => setSelectedAgent(selectedAgent?.id === agent.id ? null : agent)}
                   >
-                    <CardContent className="p-5">
-                      <div className="flex items-start gap-4">
-                        {/* Avatar */}
-                        <div className={`${tier === 'command' ? 'w-20 h-20' : 'w-16 h-16'} rounded-full overflow-hidden bg-white/5 flex-shrink-0 relative`}>
-                          {agent.avatar?.startsWith('http') ? (
-                            <Image 
-                              src={agent.avatar} 
-                              alt={agent.name}
-                              fill
-                              className="object-cover"
-                              unoptimized
-                            />
-                          ) : (
-                            <div className={`w-full h-full flex items-center justify-center ${tier === 'command' ? 'text-4xl' : 'text-3xl'}`}>
-                              {agent.avatar || '🤖'}
-                            </div>
+                    {/* Full-width avatar banner */}
+                    <div className={`relative w-full ${tier === 'command' ? 'h-64' : 'h-48'} bg-gradient-to-b from-white/5 to-transparent`}>
+                      {agent.avatar?.startsWith('http') ? (
+                        <Image 
+                          src={agent.avatar} 
+                          alt={agent.name}
+                          fill
+                          className="object-cover object-top"
+                          unoptimized
+                        />
+                      ) : (
+                        <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br from-neutral-900 to-neutral-800 ${tier === 'command' ? 'text-8xl' : 'text-6xl'}`}>
+                          {agent.avatar || '🤖'}
+                        </div>
+                      )}
+                      {/* Gradient overlay for text readability */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                      
+                      {/* Status badge overlay */}
+                      <Badge variant="outline" className={`absolute top-3 right-3 text-[10px] ${status.color} backdrop-blur-sm`}>
+                        <span className={`w-1.5 h-1.5 rounded-full mr-1 ${status.dot}`}></span>
+                        {status.label}
+                      </Badge>
+                      
+                      {/* Name overlay at bottom of image */}
+                      <div className="absolute bottom-0 left-0 right-0 p-4">
+                        <h3 className={`font-bold ${tier === 'command' ? 'text-2xl text-red-400' : 'text-xl text-white'}`}>
+                          {agent.name}
+                        </h3>
+                        <div className="flex items-center gap-2 text-sm text-neutral-300">
+                          <span className="font-medium">{agent.codename}</span>
+                          {agent.site_id && (
+                            <>
+                              <span className="text-neutral-500">•</span>
+                              <span className="text-neutral-400">{siteLabels[agent.site_id] || agent.site_id}</span>
+                            </>
                           )}
                         </div>
-                        
-                        {/* Info */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className={`font-bold ${tier === 'command' ? 'text-xl text-red-400' : 'text-lg text-white'}`}>
-                              {agent.name}
-                            </h3>
-                            <Badge variant="outline" className={`text-[10px] ${status.color}`}>
-                              <span className={`w-1.5 h-1.5 rounded-full mr-1 ${status.dot}`}></span>
-                              {status.label}
-                            </Badge>
-                          </div>
-                          
-                          <div className="flex items-center gap-2 text-sm text-neutral-400 mb-2">
-                            <span className="font-medium">{agent.codename}</span>
-                            {agent.site_id && (
-                              <>
-                                <span className="text-neutral-600">•</span>
-                                <span className="text-neutral-500">{siteLabels[agent.site_id] || agent.site_id}</span>
-                              </>
-                            )}
-                            {agent.source && (
-                              <>
-                                <span className="text-neutral-600">•</span>
-                                <span className="text-neutral-600 text-xs">{agent.source}</span>
-                              </>
-                            )}
-                          </div>
-                          
-                          <p className="text-sm text-neutral-500 leading-relaxed">
-                            {getSoulPreview(agent.soul)}
-                          </p>
-                          
-                          {/* Stats row */}
-                          <div className="flex items-center gap-4 mt-3 text-xs text-neutral-600">
-                            <span>Tasks: <span className="text-neutral-400">{agent.tasks_completed}</span></span>
-                            <span>Messages: <span className="text-neutral-400">{agent.messages_sent}</span></span>
-                            <span>Last active: <span className="text-neutral-400">{timeAgo(agent.last_active_at)}</span></span>
-                          </div>
-                        </div>
+                      </div>
+                    </div>
+                    
+                    <CardContent className="p-4">
+                      <p className="text-sm text-neutral-500 leading-relaxed line-clamp-3">
+                        {getSoulPreview(agent.soul)}
+                      </p>
+                      
+                      {/* Stats row */}
+                      <div className="flex items-center gap-4 mt-3 text-xs text-neutral-600">
+                        <span>Tasks: <span className="text-neutral-400">{agent.tasks_completed}</span></span>
+                        <span>Messages: <span className="text-neutral-400">{agent.messages_sent}</span></span>
+                        <span>{timeAgo(agent.last_active_at)}</span>
                       </div>
                       
                       {/* Expanded soul view */}

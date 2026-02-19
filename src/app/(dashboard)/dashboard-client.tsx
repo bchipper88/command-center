@@ -38,11 +38,17 @@ const siteIcons: Record<string, string> = {
 
 const eventIcons: Record<string, string> = {
   blog_written: '📝',
+  blog_published: '📝',
   business_added: '🏢',
   pr_created: '🔀',
   cron_ran: '⚙️',
   keyword_discovered: '🔍',
   rank_change: '📈',
+  agent_created: '🧙',
+  agent_updated: '🔄',
+  deployment: '🚀',
+  content_updated: '✏️',
+  seo_update: '🎯',
 }
 
 function timeAgo(date: string) {

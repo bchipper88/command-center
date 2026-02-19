@@ -15,8 +15,7 @@ export default async function BusinessesPage({ params }: { params: { siteId: str
     .from('businesses')
     .select('*')
     .eq('site_id', siteId)
-    .order('category')
-    .order('score', { ascending: false }) as unknown as { data: Business[] | null }
+    .order('added_at', { ascending: false }) as unknown as { data: Business[] | null }
 
   return <BusinessesClient siteId={siteId} businesses={businesses || []} />
 }
