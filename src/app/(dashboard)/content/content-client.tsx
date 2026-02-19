@@ -25,7 +25,7 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
   const getPostUrl = (post: BlogPost) => {
     const site = getSite(post.site_id)
     if (!site?.domain) return null
-    return `https://${site.domain}/${post.slug}`
+    return `https://${site.domain}/blog/${post.slug}`
   }
 
   const statusColors: Record<string, string> = {
