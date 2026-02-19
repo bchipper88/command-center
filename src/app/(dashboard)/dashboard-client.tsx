@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { Site, CronJob, ActivityLog } from '@/lib/supabase'
-import { AlertTriangle, CheckCircle, Clock, ArrowRight, Lightbulb, GitPullRequest } from 'lucide-react'
+import { AlertTriangle, CheckCircle, Clock, ArrowRight, Lightbulb } from 'lucide-react'
 
 interface DashboardData {
   sites: Site[]
@@ -19,7 +19,7 @@ interface DashboardData {
 }
 
 export function DashboardClient({ data }: { data: DashboardData }) {
-  const { sites, cronJobs, activity, taskStats, ideasCount, failedCrons } = data
+  const { sites, activity, taskStats, ideasCount, failedCrons } = data
 
   const hasIssues = taskStats.blocked > 0 || failedCrons > 0
   const hasPending = ideasCount > 0 || taskStats.highPriority > 0

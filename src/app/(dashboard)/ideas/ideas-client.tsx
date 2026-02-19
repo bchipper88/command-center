@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { supabase, CeoIdea } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
-import { Lightbulb, ThumbsUp, ThumbsDown, Check, X } from 'lucide-react'
+import { Lightbulb, Check, X } from 'lucide-react'
 
 const statusColors: Record<string, string> = {
   proposed: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',

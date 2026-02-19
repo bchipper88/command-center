@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { BlogPost, Site } from '@/lib/supabase'
 import { useSearchParams } from 'next/navigation'
-import { ExternalLink, FileText } from 'lucide-react'
+import { FileText } from 'lucide-react'
 
 export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick<Site, 'id' | 'name'>[] }) {
   const searchParams = useSearchParams()
