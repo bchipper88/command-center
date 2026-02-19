@@ -151,6 +151,8 @@ export type CeoIdea = {
   title: string
   description: string | null
   category: string | null
+  priority: 'low' | 'medium' | 'high' | null
+  effort: 'low' | 'medium' | 'high' | null
   impact_score: number | null
   effort_score: number | null
   status: 'proposed' | 'approved' | 'rejected' | 'implemented'

@@ -4,12 +4,31 @@ import { useState } from 'react'
 import { supabase, CeoIdea } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Lightbulb, Check, X } from 'lucide-react'
+import Image from 'next/image'
 
 const statusColors: Record<string, string> = {
   proposed: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
   approved: 'bg-green-500/20 text-green-400 border-green-500/30',
   rejected: 'bg-red-500/20 text-red-400 border-red-500/30',
   implemented: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+}
+
+const siteNames: Record<string, string> = {
+  jurassic: 'Jurassic Apparel',
+  christmas: 'The Best Christmas',
+  lv: 'LV Directory',
+  savannah: 'Savannah Directory',
+  denver: 'Denver Directory',
+  'command-center': 'Command Center',
+}
+
+const siteColors: Record<string, string> = {
+  jurassic: 'bg-green-500/20 text-green-400',
+  christmas: 'bg-red-500/20 text-red-400',
+  lv: 'bg-purple-500/20 text-purple-400',
+  savannah: 'bg-amber-500/20 text-amber-400',
+  denver: 'bg-blue-500/20 text-blue-400',
+  'command-center': 'bg-orange-500/20 text-orange-400',
 }
 
 export function IdeasClient({ ideas: initialIdeas }: { ideas: CeoIdea[] }) {
@@ -30,6 +49,11 @@ export function IdeasClient({ ideas: initialIdeas }: { ideas: CeoIdea[] }) {
   }
 
   const proposedCount = ideas.filter(i => i.status === 'proposed').length
+
+  const getAvatarUrl = (agentName: string) => {
+    const name = agentName.toLowerCase()
+    return `/avatars/${name}.png`
+  }
 
   return (
     <div className="space-y-6">
@@ -77,27 +101,57 @@ export function IdeasClient({ ideas: initialIdeas }: { ideas: CeoIdea[] }) {
               key={idea.id}
               className="border border-zinc-700/50 bg-zinc-800/30 rounded-xl p-5"
             >
-              <div className="flex items-start justify-between gap-4 mb-3">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
+              <div className="flex items-start gap-4 mb-3">
+                {/* Agent Avatar */}
+                <div className="flex-shrink-0">
+                  <div className="w-10 h-10 rounded-full overflow-hidden bg-zinc-700 ring-2 ring-zinc-600">
+                    <Image
+                      src={getAvatarUrl(idea.agent_name)}
+                      alt={idea.agent_name}
+                      width={40}
+                      height={40}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        // Fallback to initials on error
+                        e.currentTarget.style.display = 'none'
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <h3 className="font-semibold text-white">{idea.title}</h3>
                     <span className={`text-xs px-2 py-0.5 rounded border ${statusColors[idea.status]}`}>
                       {idea.status}
                     </span>
+                    {idea.site_id && (
+                      <span className={`text-xs px-2 py-0.5 rounded ${siteColors[idea.site_id] || 'bg-zinc-700 text-zinc-400'}`}>
+                        {siteNames[idea.site_id] || idea.site_id}
+                      </span>
+                    )}
                   </div>
                   <p className="text-sm text-zinc-400">{idea.description}</p>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between pl-14">
                 <div className="flex items-center gap-4 text-xs text-zinc-500">
-                  <span>From: {idea.agent_name}</span>
-                  {idea.category && <span>Category: {idea.category}</span>}
-                  {idea.impact_score && (
-                    <span>Impact: {idea.impact_score}/10</span>
+                  <span className="font-medium text-zinc-400">{idea.agent_name}</span>
+                  {idea.category && (
+                    <span className="px-2 py-0.5 bg-zinc-800 rounded">
+                      {idea.category}
+                    </span>
                   )}
-                  {idea.effort_score && (
-                    <span>Effort: {idea.effort_score}/10</span>
+                  {idea.priority && (
+                    <span className={`px-2 py-0.5 rounded ${
+                      idea.priority === 'high' ? 'bg-red-500/20 text-red-400' :
+                      idea.priority === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                      'bg-zinc-700 text-zinc-400'
+                    }`}>
+                      {idea.priority}
+                    </span>
                   )}
                 </div>
 
