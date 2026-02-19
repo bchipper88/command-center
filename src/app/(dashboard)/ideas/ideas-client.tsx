@@ -39,13 +39,32 @@ export function IdeasClient({ ideas: initialIdeas }: { ideas: CeoIdea[] }) {
     ? ideas 
     : ideas.filter(i => i.status === filter)
 
-  const handleRate = async (id: string, status: 'approved' | 'rejected') => {
+  const handleApprove = async (idea: CeoIdea) => {
+    // Create a task for the agent in the kanban
+    const siteContext = idea.site_id ? ` [${siteNames[idea.site_id] || idea.site_id}]` : ''
+    await supabase.from('tasks').insert({
+      title: idea.title + siteContext,
+      description: idea.description,
+      status: 'todo',
+      assigned_to: idea.agent_name,
+      priority: idea.priority || 'medium',
+    })
+
+    // Update idea status to approved
     await supabase
       .from('ceo_ideas')
-      .update({ status, updated_at: new Date().toISOString() })
-      .eq('id', id)
+      .update({ status: 'approved', updated_at: new Date().toISOString() })
+      .eq('id', idea.id)
     
-    setIdeas(ideas.map(i => i.id === id ? { ...i, status } : i))
+    setIdeas(ideas.map(i => i.id === idea.id ? { ...i, status: 'approved' } : i))
+  }
+
+  const handleReject = async (id: string) => {
+    // Delete the idea
+    await supabase.from('ceo_ideas').delete().eq('id', id)
+    
+    // Remove from local state
+    setIdeas(ideas.filter(i => i.id !== id))
   }
 
   const proposedCount = ideas.filter(i => i.status === 'proposed').length
@@ -160,7 +179,7 @@ export function IdeasClient({ ideas: initialIdeas }: { ideas: CeoIdea[] }) {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => handleRate(idea.id, 'rejected')}
+                      onClick={() => handleReject(idea.id)}
                       className="text-red-400 border-red-500/30 hover:bg-red-500/10"
                     >
                       <X className="w-4 h-4 mr-1" />
@@ -168,7 +187,7 @@ export function IdeasClient({ ideas: initialIdeas }: { ideas: CeoIdea[] }) {
                     </Button>
                     <Button
                       size="sm"
-                      onClick={() => handleRate(idea.id, 'approved')}
+                      onClick={() => handleApprove(idea)}
                       className="bg-green-600 hover:bg-green-500"
                     >
                       <Check className="w-4 h-4 mr-1" />
