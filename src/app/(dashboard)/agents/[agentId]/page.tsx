@@ -1,10 +1,14 @@
 import { supabase } from '@/lib/supabase'
 import { notFound } from 'next/navigation'
 import { AgentDetailClient } from './client'
+import { unstable_noStore as noStore } from 'next/cache'
 
 export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 export default async function AgentPage({ params }: { params: { agentId: string } }) {
+  noStore()
+  
   const { data: agent } = await supabase
     .from('agents')
     .select('*')
