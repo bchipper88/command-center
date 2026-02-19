@@ -21,6 +21,7 @@ const jurassicNav = [
 
 const agentsNav = [
   { href: '/agents', label: 'Overview', icon: '🤖' },
+  { href: '/tasks', label: 'Tasks', icon: '📋' },
   { href: '/ops', label: 'Operations', icon: '⚙️' },
   { href: '/files', label: 'Files', icon: '📁' },
 ]
