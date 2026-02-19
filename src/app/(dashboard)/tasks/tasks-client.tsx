@@ -183,6 +183,15 @@ export function TasksClient({ initialTasks }: { initialTasks: Task[] }) {
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [draggedTask, setDraggedTask] = useState<Task | null>(null)
 
+  // Fetch fresh data on mount (RSC can be stale)
+  useEffect(() => {
+    const fetchTasks = async () => {
+      const { data } = await supabase.from('tasks').select('*').order('created_at', { ascending: false })
+      if (data) setTasks(data as Task[])
+    }
+    fetchTasks()
+  }, [])
+
   useEffect(() => {
     const channel = supabase.channel('tasks_changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, async () => {
