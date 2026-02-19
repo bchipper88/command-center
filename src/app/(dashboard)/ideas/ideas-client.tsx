@@ -1,10 +1,9 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import { supabase, CeoIdea } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
-import { Lightbulb, Check, X } from 'lucide-react'
+import { Lightbulb, Check, X, RefreshCw } from 'lucide-react'
 
 const statusColors: Record<string, string> = {
   proposed: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
@@ -32,10 +31,29 @@ const siteColors: Record<string, string> = {
 }
 
 export function IdeasClient({ ideas: initialIdeas }: { ideas: CeoIdea[] }) {
-  const router = useRouter()
-  const [ideas, setIdeas] = useState(initialIdeas)
+  const [ideas, setIdeas] = useState<CeoIdea[]>(initialIdeas)
   const [filter, setFilter] = useState<string>('proposed')
   const [loading, setLoading] = useState<string | null>(null)
+  const [refreshing, setRefreshing] = useState(false)
+
+  // Fetch fresh data from Supabase
+  const fetchIdeas = async () => {
+    setRefreshing(true)
+    const { data, error } = await supabase
+      .from('ceo_ideas')
+      .select('*')
+      .order('created_at', { ascending: false })
+    
+    if (!error && data) {
+      setIdeas(data)
+    }
+    setRefreshing(false)
+  }
+
+  // Initial fetch on mount to ensure fresh data
+  useEffect(() => {
+    fetchIdeas()
+  }, [])
 
   const filteredIdeas = filter === 'all' 
     ? ideas 
@@ -74,9 +92,8 @@ export function IdeasClient({ ideas: initialIdeas }: { ideas: CeoIdea[] }) {
         return
       }
       
-      // Update local state and refresh server data
-      setIdeas(ideas.map(i => i.id === idea.id ? { ...i, status: 'approved' } : i))
-      router.refresh()
+      // Immediately update local state
+      setIdeas(prev => prev.map(i => i.id === idea.id ? { ...i, status: 'approved' } : i))
     } catch (err) {
       console.error('Approve error:', err)
       alert(`Error: ${err}`)
@@ -98,9 +115,8 @@ export function IdeasClient({ ideas: initialIdeas }: { ideas: CeoIdea[] }) {
         return
       }
       
-      // Remove from local state and refresh server data
-      setIdeas(ideas.filter(i => i.id !== id))
-      router.refresh()
+      // Immediately remove from local state
+      setIdeas(prev => prev.filter(i => i.id !== id))
     } catch (err) {
       console.error('Reject error:', err)
       alert(`Error: ${err}`)
@@ -125,6 +141,16 @@ export function IdeasClient({ ideas: initialIdeas }: { ideas: CeoIdea[] }) {
             {proposedCount} ideas waiting for your review
           </p>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={fetchIdeas}
+          disabled={refreshing}
+          className="text-zinc-400 border-zinc-700"
+        >
+          <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+          Refresh
+        </Button>
       </div>
 
       {/* Filters */}
