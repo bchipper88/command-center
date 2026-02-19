@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { supabase, CeoIdea } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Lightbulb, Check, X } from 'lucide-react'
@@ -31,14 +32,17 @@ const siteColors: Record<string, string> = {
 }
 
 export function IdeasClient({ ideas: initialIdeas }: { ideas: CeoIdea[] }) {
+  const router = useRouter()
   const [ideas, setIdeas] = useState(initialIdeas)
   const [filter, setFilter] = useState<string>('proposed')
+  const [loading, setLoading] = useState<string | null>(null)
 
   const filteredIdeas = filter === 'all' 
     ? ideas 
     : ideas.filter(i => i.status === filter)
 
   const handleApprove = async (idea: CeoIdea) => {
+    setLoading(idea.id)
     try {
       // Create a task for the agent in the kanban
       const siteContext = idea.site_id ? ` [${siteNames[idea.site_id] || idea.site_id}]` : ''
@@ -53,6 +57,7 @@ export function IdeasClient({ ideas: initialIdeas }: { ideas: CeoIdea[] }) {
       if (taskError) {
         console.error('Task insert error:', taskError)
         alert(`Failed to create task: ${taskError.message}`)
+        setLoading(null)
         return
       }
 
@@ -65,17 +70,23 @@ export function IdeasClient({ ideas: initialIdeas }: { ideas: CeoIdea[] }) {
       if (updateError) {
         console.error('Idea update error:', updateError)
         alert(`Failed to update idea: ${updateError.message}`)
+        setLoading(null)
         return
       }
       
+      // Update local state and refresh server data
       setIdeas(ideas.map(i => i.id === idea.id ? { ...i, status: 'approved' } : i))
+      router.refresh()
     } catch (err) {
       console.error('Approve error:', err)
       alert(`Error: ${err}`)
+    } finally {
+      setLoading(null)
     }
   }
 
   const handleReject = async (id: string) => {
+    setLoading(id)
     try {
       // Delete the idea
       const { error } = await supabase.from('ceo_ideas').delete().eq('id', id)
@@ -83,14 +94,18 @@ export function IdeasClient({ ideas: initialIdeas }: { ideas: CeoIdea[] }) {
       if (error) {
         console.error('Delete error:', error)
         alert(`Failed to delete: ${error.message}`)
+        setLoading(null)
         return
       }
       
-      // Remove from local state
+      // Remove from local state and refresh server data
       setIdeas(ideas.filter(i => i.id !== id))
+      router.refresh()
     } catch (err) {
       console.error('Reject error:', err)
       alert(`Error: ${err}`)
+    } finally {
+      setLoading(null)
     }
   }
 
@@ -205,18 +220,20 @@ export function IdeasClient({ ideas: initialIdeas }: { ideas: CeoIdea[] }) {
                       size="sm"
                       variant="outline"
                       onClick={() => handleReject(idea.id)}
-                      className="text-red-400 border-red-500/30 hover:bg-red-500/10"
+                      disabled={loading === idea.id}
+                      className="text-red-400 border-red-500/30 hover:bg-red-500/10 disabled:opacity-50"
                     >
                       <X className="w-4 h-4 mr-1" />
-                      Reject
+                      {loading === idea.id ? 'Deleting...' : 'Reject'}
                     </Button>
                     <Button
                       size="sm"
                       onClick={() => handleApprove(idea)}
-                      className="bg-green-600 hover:bg-green-500"
+                      disabled={loading === idea.id}
+                      className="bg-green-600 hover:bg-green-500 disabled:opacity-50"
                     >
                       <Check className="w-4 h-4 mr-1" />
-                      Approve
+                      {loading === idea.id ? 'Saving...' : 'Approve'}
                     </Button>
                   </div>
                 )}
