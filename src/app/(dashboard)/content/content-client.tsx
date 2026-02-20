@@ -3,7 +3,12 @@
 import { useState } from 'react'
 import { BlogPost, Site } from '@/lib/supabase'
 import { useSearchParams } from 'next/navigation'
-import { FileText, ExternalLink } from 'lucide-react'
+import { FileText, ExternalLink, MessageSquare, X } from 'lucide-react'
+
+type CommentModal = {
+  post: BlogPost
+  url: string
+} | null
 
 export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick<Site, 'id' | 'name' | 'domain'>[] }) {
   const searchParams = useSearchParams()
@@ -11,6 +16,10 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
   const [selectedSite, setSelectedSite] = useState(initialSite)
   const [search, setSearch] = useState('')
   const [sortBy, setSortBy] = useState<'created' | 'published'>('published')
+  const [commentModal, setCommentModal] = useState<CommentModal>(null)
+  const [commentText, setCommentText] = useState('')
+  const [commentType, setCommentType] = useState<'issue' | 'learning'>('issue')
+  const [submitting, setSubmitting] = useState(false)
 
   const filteredPosts = posts.filter(post => {
     const matchesSite = selectedSite === 'all' || post.site_id === selectedSite
@@ -46,6 +55,39 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
     published: 'bg-green-500/20 text-green-400',
     draft: 'bg-yellow-500/20 text-yellow-400',
     pending: 'bg-blue-500/20 text-blue-400',
+  }
+
+  const handleSubmitComment = async () => {
+    if (!commentModal || !commentText.trim()) return
+    
+    setSubmitting(true)
+    try {
+      const response = await fetch('/api/content-comments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          postId: commentModal.post.id,
+          postTitle: commentModal.post.title,
+          postUrl: commentModal.url,
+          comment: commentText,
+          type: commentType
+        })
+      })
+
+      if (response.ok) {
+        setCommentModal(null)
+        setCommentText('')
+        setCommentType('issue')
+        // Could add a toast notification here
+      } else {
+        alert('Failed to submit comment')
+      }
+    } catch (error) {
+      console.error('Comment submission error:', error)
+      alert('Failed to submit comment')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -100,6 +142,7 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
                 <th className="p-4">Keyword</th>
                 <th className="p-4">Status</th>
                 <th className="p-4">Date</th>
+                <th className="p-4"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800">
@@ -146,11 +189,105 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
                         : new Date(post.created_at).toLocaleDateString()
                       }
                     </td>
+                    <td className="p-4">
+                      <button
+                        onClick={() => setCommentModal({ post, url: url || '' })}
+                        className="p-2 text-zinc-400 hover:text-orange-400 hover:bg-zinc-800 rounded-lg transition-colors"
+                        title="Add comment"
+                      >
+                        <MessageSquare className="w-4 h-4" />
+                      </button>
+                    </td>
                   </tr>
                 )
               })}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Comment Modal */}
+      {commentModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-zinc-900 border border-zinc-700 rounded-xl max-w-2xl w-full p-6">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <h3 className="text-lg font-bold text-white">Add Comment</h3>
+                <p className="text-sm text-zinc-400 mt-1">{commentModal.post.title}</p>
+              </div>
+              <button
+                onClick={() => setCommentModal(null)}
+                className="p-1 text-zinc-400 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* Type selector */}
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">Comment Type</label>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setCommentType('issue')}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      commentType === 'issue'
+                        ? 'bg-red-500/20 text-red-400 border border-red-500/50'
+                        : 'bg-zinc-800 text-zinc-400 border border-zinc-700 hover:border-zinc-600'
+                    }`}
+                  >
+                    🚨 Issue (creates task)
+                  </button>
+                  <button
+                    onClick={() => setCommentType('learning')}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      commentType === 'learning'
+                        ? 'bg-green-500/20 text-green-400 border border-green-500/50'
+                        : 'bg-zinc-800 text-zinc-400 border border-zinc-700 hover:border-zinc-600'
+                    }`}
+                  >
+                    ✨ Learning (logs success)
+                  </button>
+                </div>
+              </div>
+
+              {/* Comment textarea */}
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  {commentType === 'issue' ? 'What needs to be fixed?' : 'What worked well?'}
+                </label>
+                <textarea
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white placeholder:text-zinc-500 min-h-[120px]"
+                  placeholder={
+                    commentType === 'issue'
+                      ? 'Describe the issue or improvement needed...'
+                      : 'Describe what made this content effective...'
+                  }
+                  autoFocus
+                />
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => setCommentModal(null)}
+                  className="px-4 py-2 text-sm font-medium text-zinc-400 hover:text-white transition-colors"
+                  disabled={submitting}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSubmitComment}
+                  disabled={!commentText.trim() || submitting}
+                  className="px-4 py-2 bg-orange-600 hover:bg-orange-700 disabled:bg-zinc-700 disabled:text-zinc-500 text-white text-sm font-medium rounded-lg transition-colors"
+                >
+                  {submitting ? 'Submitting...' : `Submit ${commentType === 'issue' ? 'Issue' : 'Learning'}`}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
