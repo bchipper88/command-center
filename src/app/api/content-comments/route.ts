@@ -16,9 +16,9 @@ export async function POST(req: NextRequest) {
         .insert({
           title: `Content issue: ${postTitle}`,
           description: `**URL:** ${postUrl}\n\n**Issue:**\n${comment}`,
-          status: 'pending',
+          status: 'todo',
           assigned_to: 'Bellatrix',
-          priority: 'normal'
+          priority: 'medium'
         })
         .select()
 
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
         .insert({
           title: `✨ Learning: ${postTitle}`,
           description: `**URL:** ${postUrl}\n\n**What worked:**\n${comment}\n\n**Category:** content_quality`,
-          status: 'completed',
+          status: 'done',
           assigned_to: 'System',
           priority: 'low',
           completed_at: new Date().toISOString()
