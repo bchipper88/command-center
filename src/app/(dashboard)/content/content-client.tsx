@@ -55,6 +55,11 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
         return `https://${site.domain}/christmas-crafts/${subcategory}/${post.slug}/`
       }
       if (post.category?.startsWith('blog/')) {
+        // Blog posts may have subdirectories (e.g. blog/2026/slug)
+        const categoryPath = post.category.substring(5) // Remove "blog/" prefix
+        if (categoryPath) {
+          return `https://${site.domain}/blog/${categoryPath}/${post.slug}/`
+        }
         return `https://${site.domain}/blog/${post.slug}/`
       }
       // Fallback
