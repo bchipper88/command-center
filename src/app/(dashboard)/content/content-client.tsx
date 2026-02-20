@@ -24,21 +24,6 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
 
   // Initialize reviewed posts from database
   useEffect(() => {
-    console.log('[Client Init] Total posts received:', posts.length)
-    const triflePost = posts.find(p => p.title?.includes('Trifle'))
-    if (triflePost) {
-      console.log('[Client Init] Christmas Trifle post:', {
-        id: triflePost.id,
-        title: triflePost.title,
-        reviewed: triflePost.reviewed
-      })
-    }
-    console.log('[Client Init] Sample IDs:', posts.slice(0, 3).map(p => ({ 
-      title: p.title?.substring(0, 30), 
-      id: p.id,
-      reviewed: p.reviewed 
-    })))
-    
     const reviewed = new Set(posts.filter(p => p.reviewed).map(p => p.id))
     setReviewedPosts(reviewed)
   }, [posts])
@@ -139,10 +124,6 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
     const isCurrentlyReviewed = reviewedPosts.has(post.id)
     const newReviewedState = !isCurrentlyReviewed
     
-    console.log(`[Review Toggle] Post: ${post.id}`)
-    console.log(`[Review Toggle] Current state: ${isCurrentlyReviewed}`)
-    console.log(`[Review Toggle] New state: ${newReviewedState}`)
-    
     // Toggle local state immediately for instant feedback
     setReviewedPosts(prev => {
       const newSet = new Set(prev)
@@ -156,26 +137,18 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
     
     // Update database
     try {
-      const payload = {
-        postId: post.id,
-        postTitle: post.title,
-        postUrl: url,
-        reviewed: newReviewedState
-      }
-      console.log('[Review Toggle] Sending payload:', JSON.stringify(payload))
-      
       const response = await fetch('/api/content-review', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({
+          postId: post.id,
+          postTitle: post.title,
+          postUrl: url,
+          reviewed: newReviewedState
+        })
       })
 
-      const data = await response.json()
-      console.log('[Review Toggle] API response:', data)
-      console.log('[Review Toggle] HTTP status:', response.status)
-
       if (!response.ok) {
-        console.error('[Review Toggle] API call failed')
         // Revert local state on error
         setReviewedPosts(prev => {
           const newSet = new Set(prev)
@@ -187,11 +160,9 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
           return newSet
         })
         alert('Failed to update review status')
-      } else {
-        console.log('[Review Toggle] Success - database updated')
       }
     } catch (error) {
-      console.error('[Review Toggle] Exception caught:', error)
+      console.error('Review error:', error)
       // Revert local state on error
       setReviewedPosts(prev => {
         const newSet = new Set(prev)
