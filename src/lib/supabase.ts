@@ -4,7 +4,17 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = 'https://heetkfaggxclbwfrmhln.supabase.co'
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhlZXRrZmFnZ3hjbGJ3ZnJtaGxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzNjIzNjQsImV4cCI6MjA4NjkzODM2NH0.j1LnNkyIbzLilRIePf4qD90lcKhksdQNnkF81IIcQxc'
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: false,
+    autoRefreshToken: false
+  },
+  global: {
+    headers: {
+      'Cache-Control': 'no-cache, no-store, must-revalidate'
+    }
+  }
+})
 
 export type Site = {
   id: string
@@ -162,4 +172,4 @@ export type CeoIdea = {
   created_at: string
   updated_at: string
 }
-// Cache bust Fri Feb 20 19:07:38 UTC 2026
+// Cache bust: Fri Feb 20 19:30 UTC 2026 - Force no-cache headers

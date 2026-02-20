@@ -2,6 +2,8 @@ import { supabase, BlogPost, Site } from '@/lib/supabase'
 import { ContentClient } from './content-client'
 
 export const dynamic = 'force-dynamic'
+export const revalidate = 0 // Never cache
+export const fetchCache = 'force-no-store'
 
 export default async function ContentPage() {
   const [
