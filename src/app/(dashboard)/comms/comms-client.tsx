@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { MessageSquare, ArrowRight, Clock, CheckCircle } from 'lucide-react'
+import { MessageSquare, ArrowRight, Clock, CheckCircle, RefreshCw } from 'lucide-react'
 
 type Message = {
   id: string
@@ -53,17 +53,31 @@ export function CommsClient() {
   const [messages, setMessages] = useState<Message[]>([])
   const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [filter, setFilter] = useState<string | null>(null)
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
+
+  const fetchMessages = async (isManual = false) => {
+    if (isManual) setRefreshing(true)
+    try {
+      const res = await fetch('/api/agent-comms?t=' + Date.now())
+      const data = await res.json()
+      setMessages(data.messages || [])
+      setStats(data.stats)
+      setLastUpdated(new Date())
+    } catch {
+      // silent
+    } finally {
+      setLoading(false)
+      setRefreshing(false)
+    }
+  }
 
   useEffect(() => {
-    fetch('/api/agent-comms')
-      .then(res => res.json())
-      .then(data => {
-        setMessages(data.messages || [])
-        setStats(data.stats)
-        setLoading(false)
-      })
-      .catch(() => setLoading(false))
+    fetchMessages()
+    // Poll every 15 seconds
+    const interval = setInterval(() => fetchMessages(), 15000)
+    return () => clearInterval(interval)
   }, [])
 
   const filteredMessages = filter
@@ -83,20 +97,34 @@ export function CommsClient() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Agent Communications</h1>
-          <p className="text-neutral-500 text-sm">Inter-agent messaging and collaboration</p>
+          <p className="text-neutral-500 text-sm">
+            Inter-agent messaging and collaboration
+            {lastUpdated && (
+              <span className="ml-2 text-neutral-600">· updated {lastUpdated.toLocaleTimeString()}</span>
+            )}
+          </p>
         </div>
-        {stats && (
-          <div className="flex gap-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-white">{stats.total}</div>
-              <div className="text-xs text-neutral-500">Total</div>
+        <div className="flex items-center gap-4">
+          {stats && (
+            <div className="flex gap-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-white">{stats.total}</div>
+                <div className="text-xs text-neutral-500">Total</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-amber-400">{stats.unread}</div>
+                <div className="text-xs text-neutral-500">Unread</div>
+              </div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-amber-400">{stats.unread}</div>
-              <div className="text-xs text-neutral-500">Unread</div>
-            </div>
-          </div>
-        )}
+          )}
+          <button
+            onClick={() => fetchMessages(true)}
+            className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-neutral-400 hover:text-white"
+            title="Refresh"
+          >
+            <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+          </button>
+        </div>
       </div>
 
       {/* Agent filter chips */}
