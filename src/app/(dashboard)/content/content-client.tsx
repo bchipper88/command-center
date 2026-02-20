@@ -20,6 +20,7 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
   const [commentText, setCommentText] = useState('')
   const [commentType, setCommentType] = useState<'issue' | 'learning'>('issue')
   const [submitting, setSubmitting] = useState(false)
+  const [reviewedPosts, setReviewedPosts] = useState<Set<string>>(new Set())
 
   const filteredPosts = posts.filter(post => {
     const matchesSite = selectedSite === 'all' || post.site_id === selectedSite
@@ -114,8 +115,6 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
   }
 
   const handleMarkReviewed = async (post: BlogPost, url: string) => {
-    if (!confirm(`Mark "${post.title}" as reviewed?`)) return
-    
     try {
       const response = await fetch('/api/content-review', {
         method: 'POST',
@@ -128,7 +127,8 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
       })
 
       if (response.ok) {
-        // Could add a toast notification here
+        // Update local state to show reviewed immediately
+        setReviewedPosts(prev => new Set(prev).add(post.id))
       } else {
         alert('Failed to mark as reviewed')
       }
@@ -262,8 +262,12 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleMarkReviewed(post, url || '')}
-                          className="p-2 text-zinc-400 hover:text-green-400 hover:bg-zinc-800 rounded-lg transition-colors"
-                          title="Mark as reviewed"
+                          className={`p-2 rounded-lg transition-colors ${
+                            reviewedPosts.has(post.id)
+                              ? 'text-green-400 bg-green-500/20'
+                              : 'text-zinc-400 hover:text-green-400 hover:bg-zinc-800'
+                          }`}
+                          title={reviewedPosts.has(post.id) ? 'Reviewed' : 'Mark as reviewed'}
                         >
                           <CheckCircle className="w-4 h-4" />
                         </button>
