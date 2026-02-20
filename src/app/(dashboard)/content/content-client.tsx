@@ -24,7 +24,7 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
   const initialSite = searchParams.get('site') || 'all'
   const [selectedSite, setSelectedSite] = useState(initialSite)
   const [search, setSearch] = useState('')
-  const [sortBy, setSortBy] = useState<'created' | 'published' | 'unreviewed'>('published')
+  const [sortBy, setSortBy] = useState<'created' | 'published' | 'unreviewed'>('unreviewed')
   const [commentModal, setCommentModal] = useState<CommentModal>(null)
   const [commentText, setCommentText] = useState('')
   const [commentType, setCommentType] = useState<'issue' | 'learning'>('issue')

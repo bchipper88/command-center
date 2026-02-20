@@ -43,7 +43,9 @@ export async function POST(req: NextRequest) {
           description: `**URL:** ${postUrl}\n\n**Issue:**\n${comment}`,
           status: 'todo',
           assigned_to: assignedTo,
-          priority: 'medium'
+          priority: 'medium',
+          post_id: postId,
+          post_url: postUrl
         })
         .select()
 
@@ -69,7 +71,9 @@ export async function POST(req: NextRequest) {
           status: 'done',
           assigned_to: 'System',
           priority: 'low',
-          completed_at: new Date().toISOString()
+          completed_at: new Date().toISOString(),
+          post_id: postId,
+          post_url: postUrl
         })
         .select()
 
