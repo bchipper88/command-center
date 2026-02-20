@@ -15,26 +15,32 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
 
 export async function POST(req: NextRequest) {
   try {
-    const { postId, postTitle, postUrl, reviewed } = await req.json()
+    const body = await req.json()
+    const { postId, postTitle, postUrl, reviewed } = body
+
+    console.log(`[content-review API] Received request:`, JSON.stringify(body))
+    console.log(`[content-review API] postId: ${postId}, reviewed: ${reviewed}, type: ${typeof reviewed}`)
 
     if (!postId) {
+      console.error('[content-review API] Missing postId')
       return NextResponse.json({ error: 'Missing postId' }, { status: 400 })
     }
 
-    // Log for debugging
-    console.log(`[content-review] Updating post ${postId} - reviewed: ${reviewed}`)
-
     // Explicitly handle boolean to avoid any coercion issues
     const reviewedValue = reviewed === false ? false : true
+    console.log(`[content-review API] Computed reviewedValue: ${reviewedValue}, type: ${typeof reviewedValue}`)
 
     // Update reviewed status in blog_posts table
-    const { error: updateError } = await supabase
+    const { data: updateData, error: updateError } = await supabase
       .from('blog_posts')
       .update({ reviewed: reviewedValue })
       .eq('id', postId)
+      .select()
+
+    console.log(`[content-review API] Update result:`, updateData)
 
     if (updateError) {
-      console.error('Failed to update reviewed status:', updateError)
+      console.error('[content-review API] Failed to update reviewed status:', updateError)
       return NextResponse.json({ error: 'Failed to update reviewed status', details: updateError.message }, { status: 500 })
     }
 

@@ -124,6 +124,10 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
     const isCurrentlyReviewed = reviewedPosts.has(post.id)
     const newReviewedState = !isCurrentlyReviewed
     
+    console.log(`[Review Toggle] Post: ${post.id}`)
+    console.log(`[Review Toggle] Current state: ${isCurrentlyReviewed}`)
+    console.log(`[Review Toggle] New state: ${newReviewedState}`)
+    
     // Toggle local state immediately for instant feedback
     setReviewedPosts(prev => {
       const newSet = new Set(prev)
@@ -137,18 +141,26 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
     
     // Update database
     try {
+      const payload = {
+        postId: post.id,
+        postTitle: post.title,
+        postUrl: url,
+        reviewed: newReviewedState
+      }
+      console.log('[Review Toggle] Sending payload:', JSON.stringify(payload))
+      
       const response = await fetch('/api/content-review', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          postId: post.id,
-          postTitle: post.title,
-          postUrl: url,
-          reviewed: newReviewedState
-        })
+        body: JSON.stringify(payload)
       })
 
+      const data = await response.json()
+      console.log('[Review Toggle] API response:', data)
+      console.log('[Review Toggle] HTTP status:', response.status)
+
       if (!response.ok) {
+        console.error('[Review Toggle] API call failed')
         // Revert local state on error
         setReviewedPosts(prev => {
           const newSet = new Set(prev)
@@ -160,8 +172,11 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
           return newSet
         })
         alert('Failed to update review status')
+      } else {
+        console.log('[Review Toggle] Success - database updated')
       }
     } catch (error) {
+      console.error('[Review Toggle] Exception caught:', error)
       // Revert local state on error
       setReviewedPosts(prev => {
         const newSet = new Set(prev)
@@ -172,7 +187,6 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
         }
         return newSet
       })
-      console.error('Review error:', error)
       alert('Failed to update review status')
     }
   }
