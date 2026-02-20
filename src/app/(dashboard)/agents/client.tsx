@@ -185,7 +185,6 @@ export function AgentsClient({ agents }: Props) {
             }`}>
               {tierAgents.map(agent => {
                 const status = statusConfig[agent.status || 'idle']
-                const stats = getAgentStats(agent.name)
                 
                 return (
                   <Link key={agent.id} href={`/agents/${agent.id}`}>
