@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
-import { writeFileSync, appendFileSync, existsSync } from 'fs'
-import { join } from 'path'
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,14 +17,14 @@ export async function POST(req: NextRequest) {
           title: `Content issue: ${postTitle}`,
           description: `**URL:** ${postUrl}\n\n**Issue:**\n${comment}`,
           status: 'pending',
-          assigned_to: null, // Can be assigned later
+          assigned_to: null,
           priority: 'normal'
         })
         .select()
 
       if (error) {
         console.error('Failed to create task:', error)
-        return NextResponse.json({ error: 'Failed to create task' }, { status: 500 })
+        return NextResponse.json({ error: 'Failed to create task', details: error.message }, { status: 500 })
       }
 
       return NextResponse.json({ 
@@ -37,40 +35,37 @@ export async function POST(req: NextRequest) {
     } 
     
     if (type === 'learning') {
-      // Append to learnings file
-      const learningsPath = join(process.env.HOME || '/home/ubuntu', '.openclaw/skills/self-improving-agent/.learnings/LEARNINGS.md')
-      
-      const timestamp = new Date().toISOString().split('T')[0]
-      const entry = `
-## Content Quality Learning (${timestamp})
+      // Store learning as a completed task with special title prefix
+      const { data, error } = await supabase
+        .from('tasks')
+        .insert({
+          title: `✨ Learning: ${postTitle}`,
+          description: `**URL:** ${postUrl}\n\n**What worked:**\n${comment}\n\n**Category:** content_quality`,
+          status: 'completed',
+          assigned_to: null,
+          priority: 'low',
+          completed_at: new Date().toISOString()
+        })
+        .select()
 
-**Post:** ${postTitle}  
-**URL:** ${postUrl}
-
-**What worked:**
-${comment}
-
-**Category:** content_quality
-
----
-
-`
-      
-      if (existsSync(learningsPath)) {
-        appendFileSync(learningsPath, entry)
-      } else {
-        writeFileSync(learningsPath, entry)
+      if (error) {
+        console.error('Failed to save learning:', error)
+        return NextResponse.json({ error: 'Failed to save learning', details: error.message }, { status: 500 })
       }
 
       return NextResponse.json({ 
         success: true, 
-        type: 'learning' 
+        type: 'learning',
+        taskId: data[0]?.id 
       })
     }
 
     return NextResponse.json({ error: 'Invalid type' }, { status: 400 })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Content comment error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return NextResponse.json({ 
+      error: 'Internal server error', 
+      details: error?.message || 'Unknown error' 
+    }, { status: 500 })
   }
 }
