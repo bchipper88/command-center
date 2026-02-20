@@ -239,8 +239,8 @@ export function AgentsClient({ agents }: Props) {
                         
                         {/* Stats row */}
                         <div className="flex items-center gap-4 mt-3 text-xs text-neutral-600">
-                          <span>Tasks: <span className="text-amber-400">{stats.tasks}</span></span>
-                          <span>Messages: <span className="text-blue-400">{stats.messages}</span></span>
+                          <span>Tasks: <span className="text-amber-400">{agent.tasks_completed ?? 0}</span></span>
+                          <span>Messages: <span className="text-blue-400">{agent.messages_sent ?? 0}</span></span>
                           <span>{timeAgo(agent.last_active_at)}</span>
                         </div>
                       </CardContent>
