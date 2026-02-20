@@ -15,7 +15,7 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
   const initialSite = searchParams.get('site') || 'all'
   const [selectedSite, setSelectedSite] = useState(initialSite)
   const [search, setSearch] = useState('')
-  const [sortBy, setSortBy] = useState<'created' | 'published'>('published')
+  const [sortBy, setSortBy] = useState<'created' | 'published' | 'unreviewed'>('published')
   const [commentModal, setCommentModal] = useState<CommentModal>(null)
   const [commentText, setCommentText] = useState('')
   const [commentType, setCommentType] = useState<'issue' | 'learning'>('issue')
@@ -35,6 +35,19 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
       post.target_keyword?.toLowerCase().includes(search.toLowerCase())
     return matchesSite && matchesSearch
   }).sort((a, b) => {
+    if (sortBy === 'unreviewed') {
+      // Unreviewed first, then sort by published date within each group
+      const aReviewed = a.reviewed
+      const bReviewed = b.reviewed
+      if (aReviewed !== bReviewed) {
+        return aReviewed ? 1 : -1 // Unreviewed (false) comes first
+      }
+      // Within same review status, sort by date
+      const dateA = a.published_at || a.created_at
+      const dateB = b.published_at || b.created_at
+      return new Date(dateB).getTime() - new Date(dateA).getTime()
+    }
+    
     const dateA = sortBy === 'published' 
       ? (a.published_at || a.created_at) 
       : a.created_at
@@ -198,11 +211,12 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
         </select>
         <select
           value={sortBy}
-          onChange={(e) => setSortBy(e.target.value as 'created' | 'published')}
+          onChange={(e) => setSortBy(e.target.value as 'created' | 'published' | 'unreviewed')}
           className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white"
         >
           <option value="published">Latest Published</option>
           <option value="created">Latest Created</option>
+          <option value="unreviewed">Unreviewed First</option>
         </select>
         <input
           type="text"
