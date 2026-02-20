@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { supabase } from '@/lib/supabase'
 
 type Agent = {
   id: string
@@ -23,9 +24,6 @@ type Agent = {
   created_at: string
 }
 
-type Props = {
-  agents: Agent[]
-}
 
 const tierConfig: Record<string, { label: string; color: string; border: string }> = {
   command: { label: 'Supreme Command', color: 'text-red-400', border: 'border-red-500/30' },
@@ -65,8 +63,15 @@ function getSoulPreview(soul: string | null): string {
   return preview.slice(0, 200) + (preview.length > 200 ? '...' : '')
 }
 
-export function AgentsClient({ agents }: Props) {
+export function AgentsClient() {
+  const [agents, setAgents] = useState<Agent[]>([])
+  const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<string | null>(null)
+
+  useEffect(() => {
+    supabase.from('agents').select('*').order('tier').order('name')
+      .then(({ data }) => { if (data) setAgents(data); setLoading(false) })
+  }, [])
 
   // Group agents by tier
   const tiers = ['command', 'ceo', 'operative']
