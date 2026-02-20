@@ -3,12 +3,21 @@
 import { useState, useEffect } from 'react'
 import { BlogPost, Site } from '@/lib/supabase'
 import { useSearchParams } from 'next/navigation'
-import { FileText, ExternalLink, MessageSquare, X, CheckCircle } from 'lucide-react'
+import { FileText, ExternalLink, MessageSquare, X, CheckCircle, ChevronRight, ChevronDown } from 'lucide-react'
 
 type CommentModal = {
   post: BlogPost
   url: string
 } | null
+
+type Comment = {
+  id: string
+  title: string
+  description: string | null
+  status: string
+  assigned_to: string | null
+  created_at: string
+}
 
 export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick<Site, 'id' | 'name' | 'domain'>[] }) {
   const searchParams = useSearchParams()
@@ -21,6 +30,9 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
   const [commentType, setCommentType] = useState<'issue' | 'learning'>('issue')
   const [submitting, setSubmitting] = useState(false)
   const [reviewedPosts, setReviewedPosts] = useState<Set<string>>(new Set())
+  const [expandedPosts, setExpandedPosts] = useState<Set<string>>(new Set())
+  const [postComments, setPostComments] = useState<Record<string, Comment[]>>({})
+  const [loadingComments, setLoadingComments] = useState<Set<string>>(new Set())
 
   // Initialize reviewed posts from database
   useEffect(() => {
@@ -122,7 +134,15 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
         setCommentModal(null)
         setCommentText('')
         setCommentType('issue')
-        // Could add a toast notification here
+        
+        // Refresh comments for this post if it's expanded
+        if (expandedPosts.has(commentModal.post.id)) {
+          const refreshResponse = await fetch(`/api/content-comments/${commentModal.post.id}`)
+          if (refreshResponse.ok) {
+            const data = await refreshResponse.json()
+            setPostComments(prev => ({ ...prev, [commentModal.post.id]: data.comments }))
+          }
+        }
       } else {
         alert('Failed to submit comment')
       }
@@ -131,6 +151,41 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
       alert('Failed to submit comment')
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  const toggleExpanded = async (postId: string) => {
+    const isExpanded = expandedPosts.has(postId)
+    
+    if (isExpanded) {
+      // Collapse
+      setExpandedPosts(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(postId)
+        return newSet
+      })
+    } else {
+      // Expand and fetch comments if not already loaded
+      setExpandedPosts(prev => new Set(prev).add(postId))
+      
+      if (!postComments[postId]) {
+        setLoadingComments(prev => new Set(prev).add(postId))
+        try {
+          const response = await fetch(`/api/content-comments/${postId}`)
+          if (response.ok) {
+            const data = await response.json()
+            setPostComments(prev => ({ ...prev, [postId]: data.comments }))
+          }
+        } catch (error) {
+          console.error('Failed to fetch comments:', error)
+        } finally {
+          setLoadingComments(prev => {
+            const newSet = new Set(prev)
+            newSet.delete(postId)
+            return newSet
+          })
+        }
+      }
     }
   }
 
@@ -251,29 +306,42 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
             <tbody className="divide-y divide-zinc-800">
               {filteredPosts.map((post) => {
                 const url = getPostUrl(post)
+                const isExpanded = expandedPosts.has(post.id)
+                const comments = postComments[post.id] || []
+                const isLoadingComments = loadingComments.has(post.id)
+                
                 return (
-                  <tr key={post.id} className="hover:bg-zinc-800/30">
-                    <td className="p-4">
-                      {url ? (
-                        <a 
-                          href={url} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="group"
-                        >
-                          <p className="font-medium text-white truncate max-w-xs group-hover:text-orange-400 transition-colors flex items-center gap-1">
-                            {post.title}
-                            <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                          </p>
-                          <p className="text-xs text-zinc-500 truncate max-w-xs group-hover:text-zinc-400">/{post.slug}</p>
-                        </a>
-                      ) : (
-                        <>
-                          <p className="font-medium text-white truncate max-w-xs">{post.title}</p>
-                          <p className="text-xs text-zinc-500 truncate max-w-xs">/{post.slug}</p>
-                        </>
-                      )}
-                    </td>
+                  <>
+                    <tr key={post.id} className="hover:bg-zinc-800/30">
+                      <td className="p-4">
+                        <div className="flex items-start gap-2">
+                          <button
+                            onClick={() => toggleExpanded(post.id)}
+                            className="p-1 text-zinc-500 hover:text-white transition-colors mt-0.5"
+                          >
+                            {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                          </button>
+                          {url ? (
+                            <a 
+                              href={url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="group flex-1"
+                            >
+                              <p className="font-medium text-white truncate max-w-xs group-hover:text-orange-400 transition-colors flex items-center gap-1">
+                                {post.title}
+                                <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                              </p>
+                              <p className="text-xs text-zinc-500 truncate max-w-xs group-hover:text-zinc-400">/{post.slug}</p>
+                            </a>
+                          ) : (
+                            <div className="flex-1">
+                              <p className="font-medium text-white truncate max-w-xs">{post.title}</p>
+                              <p className="text-xs text-zinc-500 truncate max-w-xs">/{post.slug}</p>
+                            </div>
+                          )}
+                        </div>
+                      </td>
                     <td className="p-4 text-sm text-zinc-400">{getSiteName(post.site_id)}</td>
                     <td className="p-4 text-sm text-zinc-400">
                       {post.target_keyword || '-'}
@@ -315,6 +383,62 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
                       </div>
                     </td>
                   </tr>
+                  
+                  {/* Expanded Comment History */}
+                  {isExpanded && (
+                    <tr key={`${post.id}-expanded`}>
+                      <td colSpan={6} className="p-0 bg-zinc-800/20">
+                        <div className="p-6 border-t border-zinc-700/50">
+                          <h4 className="text-sm font-medium text-white mb-4">Comment History</h4>
+                          {isLoadingComments ? (
+                            <div className="text-sm text-zinc-500 py-4">Loading comments...</div>
+                          ) : comments.length === 0 ? (
+                            <div className="text-sm text-zinc-500 py-4">No comments or tasks yet.</div>
+                          ) : (
+                            <div className="space-y-3">
+                              {comments.map((comment) => (
+                                <div 
+                                  key={comment.id} 
+                                  className={`p-4 rounded-lg border ${
+                                    comment.title.startsWith('✨')
+                                      ? 'bg-green-500/5 border-green-500/20'
+                                      : 'bg-red-500/5 border-red-500/20'
+                                  }`}
+                                >
+                                  <div className="flex items-start justify-between mb-2">
+                                    <p className="text-sm font-medium text-white">{comment.title}</p>
+                                    <span className="text-xs text-zinc-500">
+                                      {new Date(comment.created_at).toLocaleDateString()} {new Date(comment.created_at).toLocaleTimeString()}
+                                    </span>
+                                  </div>
+                                  {comment.description && (
+                                    <p className="text-sm text-zinc-400">{comment.description}</p>
+                                  )}
+                                  <div className="flex items-center gap-3 mt-2">
+                                    <span className={`text-xs px-2 py-0.5 rounded ${
+                                      comment.status === 'done' 
+                                        ? 'bg-green-500/20 text-green-400'
+                                        : comment.status === 'in_progress'
+                                        ? 'bg-blue-500/20 text-blue-400'
+                                        : 'bg-zinc-700 text-zinc-400'
+                                    }`}>
+                                      {comment.status}
+                                    </span>
+                                    {comment.assigned_to && (
+                                      <span className="text-xs text-zinc-500">
+                                        Assigned to: {comment.assigned_to}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                  </>
                 )
               })}
             </tbody>
