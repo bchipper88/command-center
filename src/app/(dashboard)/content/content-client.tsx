@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { BlogPost, Site } from '@/lib/supabase'
 import { useSearchParams } from 'next/navigation'
 import { FileText, ExternalLink, MessageSquare, X, CheckCircle } from 'lucide-react'
@@ -21,6 +21,12 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
   const [commentType, setCommentType] = useState<'issue' | 'learning'>('issue')
   const [submitting, setSubmitting] = useState(false)
   const [reviewedPosts, setReviewedPosts] = useState<Set<string>>(new Set())
+
+  // Initialize reviewed posts from database
+  useEffect(() => {
+    const reviewed = new Set(posts.filter(p => p.reviewed).map(p => p.id))
+    setReviewedPosts(reviewed)
+  }, [posts])
 
   const filteredPosts = posts.filter(post => {
     const matchesSite = selectedSite === 'all' || post.site_id === selectedSite
@@ -116,6 +122,7 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
 
   const handleMarkReviewed = async (post: BlogPost, url: string) => {
     const isCurrentlyReviewed = reviewedPosts.has(post.id)
+    const newReviewedState = !isCurrentlyReviewed
     
     // Toggle local state immediately for instant feedback
     setReviewedPosts(prev => {
@@ -128,38 +135,45 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
       return newSet
     })
     
-    // Only call API if marking as reviewed (not when un-reviewing)
-    if (!isCurrentlyReviewed) {
-      try {
-        const response = await fetch('/api/content-review', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            postId: post.id,
-            postTitle: post.title,
-            postUrl: url
-          })
+    // Update database
+    try {
+      const response = await fetch('/api/content-review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          postId: post.id,
+          postTitle: post.title,
+          postUrl: url,
+          reviewed: newReviewedState
         })
+      })
 
-        if (!response.ok) {
-          // Revert local state on error
-          setReviewedPosts(prev => {
-            const newSet = new Set(prev)
-            newSet.delete(post.id)
-            return newSet
-          })
-          alert('Failed to mark as reviewed')
-        }
-      } catch (error) {
+      if (!response.ok) {
         // Revert local state on error
         setReviewedPosts(prev => {
           const newSet = new Set(prev)
-          newSet.delete(post.id)
+          if (isCurrentlyReviewed) {
+            newSet.add(post.id)
+          } else {
+            newSet.delete(post.id)
+          }
           return newSet
         })
-        console.error('Review error:', error)
-        alert('Failed to mark as reviewed')
+        alert('Failed to update review status')
       }
+    } catch (error) {
+      // Revert local state on error
+      setReviewedPosts(prev => {
+        const newSet = new Set(prev)
+        if (isCurrentlyReviewed) {
+          newSet.add(post.id)
+        } else {
+          newSet.delete(post.id)
+        }
+        return newSet
+      })
+      console.error('Review error:', error)
+      alert('Failed to update review status')
     }
   }
 

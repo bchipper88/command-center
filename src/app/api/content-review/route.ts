@@ -3,33 +3,45 @@ import { supabase } from '@/lib/supabase'
 
 export async function POST(req: NextRequest) {
   try {
-    const { postId, postTitle, postUrl } = await req.json()
+    const { postId, postTitle, postUrl, reviewed } = await req.json()
 
     if (!postId) {
       return NextResponse.json({ error: 'Missing postId' }, { status: 400 })
     }
 
-    // Create a completed task to track review
-    const { data, error } = await supabase
-      .from('tasks')
-      .insert({
-        title: `✅ Reviewed: ${postTitle}`,
-        description: `**URL:** ${postUrl}\n\nContent reviewed - no issues found.`,
-        status: 'done',
-        assigned_to: 'System',
-        priority: 'low',
-        completed_at: new Date().toISOString()
-      })
-      .select()
+    // Update reviewed status in blog_posts table
+    const { error: updateError } = await supabase
+      .from('blog_posts')
+      .update({ reviewed: reviewed ?? true })
+      .eq('id', postId)
 
-    if (error) {
-      console.error('Failed to mark as reviewed:', error)
-      return NextResponse.json({ error: 'Failed to mark as reviewed', details: error.message }, { status: 500 })
+    if (updateError) {
+      console.error('Failed to update reviewed status:', updateError)
+      return NextResponse.json({ error: 'Failed to update reviewed status', details: updateError.message }, { status: 500 })
+    }
+
+    // Create a completed task only when marking as reviewed (audit trail)
+    if (reviewed !== false) {
+      const { error: taskError } = await supabase
+        .from('tasks')
+        .insert({
+          title: `✅ Reviewed: ${postTitle}`,
+          description: `**URL:** ${postUrl}\n\nContent reviewed - no issues found.`,
+          status: 'done',
+          assigned_to: 'System',
+          priority: 'low',
+          completed_at: new Date().toISOString()
+        })
+
+      if (taskError) {
+        console.error('Failed to create review task:', taskError)
+        // Don't fail the request if task creation fails
+      }
     }
 
     return NextResponse.json({ 
       success: true,
-      taskId: data[0]?.id 
+      reviewed: reviewed ?? true
     })
   } catch (error: unknown) {
     console.error('Review error:', error)

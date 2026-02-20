@@ -51,6 +51,7 @@ export type BlogPost = {
   published_at: string | null
   created_at: string
   updated_at: string
+  reviewed: boolean
 }
 
 export type Keyword = {
