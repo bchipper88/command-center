@@ -138,8 +138,25 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
     }
   }
 
+  // Debug: Find trifle post
+  const triflePost = posts.find(p => p.slug === 'christmas-trifle')
+  const christmasSite = sites.find(s => s.id === 'christmas')
+
   return (
     <div className="space-y-6">
+      {triflePost && christmasSite && (
+        <div className="bg-red-900/20 border border-red-500 rounded p-4 text-xs font-mono">
+          <div className="font-bold text-red-400 mb-2">DEBUG: Christmas Trifle URL Generation</div>
+          <div>Post slug: {triflePost.slug}</div>
+          <div>Post category: {triflePost.category}</div>
+          <div>Site ID: {christmasSite.id}</div>
+          <div>Site domain: {christmasSite.domain}</div>
+          <div>site.id === 'christmas': {String(christmasSite.id === 'christmas')}</div>
+          <div>domain.includes('thebestchristmas'): {String(christmasSite.domain?.includes('thebestchristmas'))}</div>
+          <div>category?.startsWith('recipes/'): {String(triflePost.category?.startsWith('recipes/'))}</div>
+          <div className="mt-2 font-bold">Generated URL: {getPostUrl(triflePost)}</div>
+        </div>
+      )}
       <div>
         <h1 className="text-2xl font-bold">Content</h1>
         <p className="text-zinc-400 text-sm">{filteredPosts.length} posts across all sites</p>
