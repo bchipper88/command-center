@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { MessageSquare, ArrowRight, Clock, CheckCircle, RefreshCw } from 'lucide-react'
+import { MessageSquare, ArrowRight, RefreshCw } from 'lucide-react'
 
 type Message = {
   id: string
@@ -106,15 +106,9 @@ export function CommsClient() {
         </div>
         <div className="flex items-center gap-4">
           {stats && (
-            <div className="flex gap-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-white">{stats.total}</div>
-                <div className="text-xs text-neutral-500">Total</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-amber-400">{stats.unread}</div>
-                <div className="text-xs text-neutral-500">Unread</div>
-              </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-white">{stats.total}</div>
+              <div className="text-xs text-neutral-500">Total Messages</div>
             </div>
           )}
           <button
@@ -152,11 +146,6 @@ export function CommsClient() {
                 <span className="bg-white/10 text-neutral-300 text-xs px-1.5 rounded-full">
                   {totalMessages}
                 </span>
-                {agentStats.unread > 0 && (
-                  <span className="bg-amber-500/20 text-amber-400 text-xs px-1.5 rounded-full border border-amber-500/30">
-                    {agentStats.unread}
-                  </span>
-                )}
               </button>
             )
           })}
@@ -183,11 +172,7 @@ export function CommsClient() {
               {filteredMessages.map(msg => (
                 <div
                   key={msg.id}
-                  className={`p-4 rounded-lg border transition-colors ${
-                    msg.read
-                      ? 'bg-white/5 border-white/5'
-                      : 'bg-amber-500/5 border-amber-500/20'
-                  }`}
+                  className="p-4 rounded-lg border bg-white/5 border-white/5"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-center gap-2 text-sm">
@@ -202,12 +187,7 @@ export function CommsClient() {
                         {msg.priority}
                       </Badge>
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-neutral-500">
-                      {msg.read ? (
-                        <CheckCircle className="w-3 h-3 text-green-500" />
-                      ) : (
-                        <Clock className="w-3 h-3 text-amber-500" />
-                      )}
+                    <div className="text-xs text-neutral-500">
                       {timeAgo(msg.created_at)}
                     </div>
                   </div>
