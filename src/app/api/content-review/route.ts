@@ -21,10 +21,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing postId' }, { status: 400 })
     }
 
+    // Log for debugging
+    console.log(`[content-review] Updating post ${postId} - reviewed: ${reviewed}`)
+
+    // Explicitly handle boolean to avoid any coercion issues
+    const reviewedValue = reviewed === false ? false : true
+
     // Update reviewed status in blog_posts table
     const { error: updateError } = await supabase
       .from('blog_posts')
-      .update({ reviewed: reviewed ?? true })
+      .update({ reviewed: reviewedValue })
       .eq('id', postId)
 
     if (updateError) {
@@ -53,7 +59,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ 
       success: true,
-      reviewed: reviewed ?? true
+      reviewed: reviewedValue
     })
   } catch (error: unknown) {
     console.error('Review error:', error)
