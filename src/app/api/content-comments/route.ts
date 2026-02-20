@@ -61,11 +61,12 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ error: 'Invalid type' }, { status: 400 })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Content comment error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json({ 
       error: 'Internal server error', 
-      details: error?.message || 'Unknown error' 
+      details: errorMessage
     }, { status: 500 })
   }
 }

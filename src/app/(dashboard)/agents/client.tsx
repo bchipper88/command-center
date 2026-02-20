@@ -66,10 +66,15 @@ function getSoulPreview(soul: string | null): string {
 export function AgentsClient() {
   const [agents, setAgents] = useState<Agent[]>([])
   const [filter, setFilter] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    setLoading(true)
     supabase.from('agents').select('*').order('tier').order('name')
-      .then(({ data }) => { if (data) setAgents(data) })
+      .then(({ data }) => { 
+        if (data) setAgents(data)
+        setLoading(false)
+      })
   }, [])
 
   if (loading) {
