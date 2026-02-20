@@ -1,11 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
-import { ArrowLeft, ChevronDown, ChevronRight } from 'lucide-react'
+import { ArrowLeft, ChevronDown, ChevronRight, FileText } from 'lucide-react'
 
 type Agent = {
   id: string
@@ -74,13 +74,61 @@ function formatDate(date: string): string {
   })
 }
 
+type WorkspaceFile = {
+  name: string
+  content: string
+  size: number
+}
+
 export function AgentDetailClient({ agent, activities }: { agent: Agent; activities: Activity[] }) {
   const [soulExpanded, setSoulExpanded] = useState(false)
+  const [workspaceFiles, setWorkspaceFiles] = useState<WorkspaceFile[]>([])
+  const [workspacePath, setWorkspacePath] = useState<string>('')
+  const [filesLoading, setFilesLoading] = useState(true)
+  const [expandedFiles, setExpandedFiles] = useState<Record<string, boolean>>({})
+  
   const status = statusConfig[agent.status || 'idle']
   const tierColor = tierColors[agent.tier] || 'text-white'
   
   const taskCount = agent.tasks_completed ?? 0
   const messageCount = agent.messages_sent ?? 0
+
+  useEffect(() => {
+    // Map agent database ID to agent config ID
+    const agentIdMap: Record<string, string> = {
+      '6e66f25b-205d-4242-9833-7ba11f5fc536': 'reviewer', // Severus
+      // Add more mappings as needed based on site_id or name
+    }
+    
+    // Try to find agent ID by name or use direct mapping
+    let agentConfigId = agentIdMap[agent.id]
+    if (!agentConfigId && agent.site_id) {
+      agentConfigId = agent.site_id === 'christmas' ? 'christmas' :
+                     agent.site_id === 'savannah' ? 'savannah-directory' :
+                     agent.site_id === 'lv' ? 'lv-directory' :
+                     agent.site_id === 'denver' ? 'denver-directory' :
+                     agent.site_id === 'jurassic' ? 'jurassic' : null
+    }
+    
+    if (agentConfigId) {
+      fetch(`/api/agents/${agentConfigId}/files`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.files) {
+            setWorkspaceFiles(data.files)
+            setWorkspacePath(data.workspacePath || '')
+          }
+          setFilesLoading(false)
+        })
+        .catch(() => setFilesLoading(false))
+    } else {
+      setFilesLoading(false)
+    }
+  }, [agent.id, agent.site_id])
+
+  const toggleFile = (filename: string) => {
+    setExpandedFiles(prev => ({ ...prev, [filename]: !prev[filename] }))
+  }
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -178,6 +226,49 @@ export function AgentDetailClient({ agent, activities }: { agent: Agent; activit
                 </pre>
               </div>
             )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Workspace Files */}
+      {!filesLoading && workspaceFiles.length > 0 && (
+        <Card className="bg-transparent border-white/10">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <FileText className="w-5 h-5 text-neutral-500" />
+              <h2 className="text-lg font-bold text-white">Workspace Files</h2>
+              <span className="text-xs text-neutral-600 font-mono ml-auto">{workspacePath}</span>
+            </div>
+            <div className="space-y-3">
+              {workspaceFiles.map(file => (
+                <Card key={file.name} className="bg-white/5 border-white/10">
+                  <CardContent className="p-0">
+                    <button
+                      onClick={() => toggleFile(file.name)}
+                      className="w-full flex items-center justify-between px-4 py-3 text-left group hover:bg-white/5 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <FileText className="w-4 h-4 text-neutral-500" />
+                        <span className="font-mono text-sm text-white">{file.name}</span>
+                        <Badge variant="outline" className="text-[10px] text-neutral-500">
+                          {(file.size / 1024).toFixed(1)} KB
+                        </Badge>
+                      </div>
+                      <span className="text-neutral-500 group-hover:text-white transition-colors">
+                        {expandedFiles[file.name] ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                      </span>
+                    </button>
+                    {expandedFiles[file.name] && (
+                      <div className="px-4 pb-4">
+                        <pre className="whitespace-pre-wrap text-xs text-neutral-400 bg-black/30 p-4 rounded-lg overflow-x-auto font-mono leading-relaxed max-h-[500px] overflow-y-auto">
+                          {file.content}
+                        </pre>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </CardContent>
         </Card>
       )}
