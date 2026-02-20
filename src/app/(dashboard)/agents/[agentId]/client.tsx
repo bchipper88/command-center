@@ -101,7 +101,7 @@ export function AgentDetailClient({ agent, activities }: { agent: Agent; activit
     }
     
     // Try to find agent ID by name or use direct mapping
-    let agentConfigId = agentIdMap[agent.id]
+    let agentConfigId: string | null = agentIdMap[agent.id] || null
     if (!agentConfigId && agent.site_id) {
       agentConfigId = agent.site_id === 'christmas' ? 'christmas' :
                      agent.site_id === 'savannah' ? 'savannah-directory' :
