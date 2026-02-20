@@ -152,17 +152,18 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
         </div>
       ) : (
         <div className="border border-zinc-700/50 rounded-xl overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-zinc-800/50">
-              <tr className="text-left text-xs text-zinc-400 uppercase">
-                <th className="p-4">Title</th>
-                <th className="p-4">Site</th>
-                <th className="p-4">Keyword</th>
-                <th className="p-4">Status</th>
-                <th className="p-4">Date</th>
-                <th className="p-4"></th>
-              </tr>
-            </thead>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-zinc-800/50">
+                <tr className="text-left text-xs text-zinc-400 uppercase">
+                  <th className="p-4 whitespace-nowrap">Title</th>
+                  <th className="p-4 whitespace-nowrap">Site</th>
+                  <th className="p-4 whitespace-nowrap">Keyword</th>
+                  <th className="p-4 whitespace-nowrap">Status</th>
+                  <th className="p-4 whitespace-nowrap">Date</th>
+                  <th className="p-4 whitespace-nowrap"></th>
+                </tr>
+              </thead>
             <tbody className="divide-y divide-zinc-800">
               {filteredPosts.map((post) => {
                 const url = getPostUrl(post)
@@ -221,6 +222,7 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
               })}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 
