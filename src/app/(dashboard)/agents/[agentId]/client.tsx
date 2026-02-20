@@ -79,8 +79,8 @@ export function AgentDetailClient({ agent, activities }: { agent: Agent; activit
   const status = statusConfig[agent.status || 'idle']
   const tierColor = tierColors[agent.tier] || 'text-white'
   
-  const taskCount = activities.filter(a => a.category === 'task').length
-  const messageCount = activities.filter(a => a.category === 'message').length
+  const taskCount = agent.tasks_completed ?? 0
+  const messageCount = agent.messages_sent ?? 0
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
