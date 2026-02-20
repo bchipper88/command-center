@@ -5,34 +5,60 @@ import { useParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { AgentDetailClient } from './client'
 
+type Activity = Parameters<typeof AgentDetailClient>[0]['activities'][0]
+
 export default function AgentPage() {
   const params = useParams()
   const agentId = params.agentId as string
 
   const [agent, setAgent] = useState<Parameters<typeof AgentDetailClient>[0]['agent'] | null>(null)
-  const [activities, setActivities] = useState<Parameters<typeof AgentDetailClient>[0]['activities']>([])
+  const [activities, setActivities] = useState<Activity[]>([])
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
 
   useEffect(() => {
     if (!agentId) return
+
     supabase
       .from('agents')
       .select('*')
       .eq('id', agentId)
       .single()
-      .then(({ data }) => {
-        if (!data) { setNotFound(true); setLoading(false); return }
-        setAgent(data)
-        return supabase
+      .then(async ({ data: agentData }) => {
+        if (!agentData) { setNotFound(true); setLoading(false); return }
+        setAgent(agentData)
+
+        // Fetch activity log entries
+        const { data: activityRows } = await supabase
           .from('agent_activity')
           .select('*')
-          .eq('agent_name', data.name)
+          .eq('agent_name', agentData.name)
           .order('created_at', { ascending: false })
-          .limit(50)
-      })
-      .then((result) => {
-        if (result) setActivities(result.data || [])
+          .limit(30)
+
+        // Fetch CEO reviews as activity
+        const { data: reviewRows } = await supabase
+          .from('ceo_reviews')
+          .select('id, agent_name, review_date, summary, created_at')
+          .eq('agent_name', agentData.name)
+          .order('created_at', { ascending: false })
+          .limit(10)
+
+        // Merge and normalise
+        const activityItems: Activity[] = [
+          ...(activityRows || []),
+          ...(reviewRows || []).map((r) => ({
+            id: r.id,
+            agent_name: r.agent_name,
+            event_type: 'ceo_review',
+            title: `Weekly CEO Review — ${r.review_date}`,
+            description: r.summary?.slice(0, 200) ?? null,
+            category: 'task',
+            created_at: r.created_at,
+          })),
+        ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+
+        setActivities(activityItems)
         setLoading(false)
       })
   }, [agentId])
