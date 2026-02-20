@@ -37,7 +37,7 @@ export async function GET(
           content,
           size: content.length,
         })
-      } catch (err) {
+      } catch {
         // File doesn't exist, skip it
         continue
       }
