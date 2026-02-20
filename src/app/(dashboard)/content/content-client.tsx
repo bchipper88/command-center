@@ -10,6 +10,7 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
   const initialSite = searchParams.get('site') || 'all'
   const [selectedSite, setSelectedSite] = useState(initialSite)
   const [search, setSearch] = useState('')
+  const [sortBy, setSortBy] = useState<'created' | 'published'>('published')
 
   const filteredPosts = posts.filter(post => {
     const matchesSite = selectedSite === 'all' || post.site_id === selectedSite
@@ -17,6 +18,14 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
       post.title.toLowerCase().includes(search.toLowerCase()) ||
       post.target_keyword?.toLowerCase().includes(search.toLowerCase())
     return matchesSite && matchesSearch
+  }).sort((a, b) => {
+    const dateA = sortBy === 'published' 
+      ? (a.published_at || a.created_at) 
+      : a.created_at
+    const dateB = sortBy === 'published' 
+      ? (b.published_at || b.created_at) 
+      : b.created_at
+    return new Date(dateB).getTime() - new Date(dateA).getTime()
   })
 
   const getSite = (siteId: string) => sites.find(s => s.id === siteId)
@@ -57,6 +66,14 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
           {sites.map(site => (
             <option key={site.id} value={site.id}>{site.name}</option>
           ))}
+        </select>
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value as 'created' | 'published')}
+          className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white"
+        >
+          <option value="published">Latest Published</option>
+          <option value="created">Latest Created</option>
         </select>
         <input
           type="text"
