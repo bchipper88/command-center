@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { BlogPost, Site } from '@/lib/supabase'
 import { useSearchParams } from 'next/navigation'
-import { FileText, ExternalLink, MessageSquare, X } from 'lucide-react'
+import { FileText, ExternalLink, MessageSquare, X, CheckCircle } from 'lucide-react'
 
 type CommentModal = {
   post: BlogPost
@@ -108,6 +108,31 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
     }
   }
 
+  const handleMarkReviewed = async (post: BlogPost, url: string) => {
+    if (!confirm(`Mark "${post.title}" as reviewed?`)) return
+    
+    try {
+      const response = await fetch('/api/content-review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          postId: post.id,
+          postTitle: post.title,
+          postUrl: url
+        })
+      })
+
+      if (response.ok) {
+        // Could add a toast notification here
+      } else {
+        alert('Failed to mark as reviewed')
+      }
+    } catch (error) {
+      console.error('Review error:', error)
+      alert('Failed to mark as reviewed')
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -209,13 +234,22 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
                       }
                     </td>
                     <td className="p-4">
-                      <button
-                        onClick={() => setCommentModal({ post, url: url || '' })}
-                        className="p-2 text-zinc-400 hover:text-orange-400 hover:bg-zinc-800 rounded-lg transition-colors"
-                        title="Add comment"
-                      >
-                        <MessageSquare className="w-4 h-4" />
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleMarkReviewed(post, url || '')}
+                          className="p-2 text-zinc-400 hover:text-green-400 hover:bg-zinc-800 rounded-lg transition-colors"
+                          title="Mark as reviewed"
+                        >
+                          <CheckCircle className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => setCommentModal({ post, url: url || '' })}
+                          className="p-2 text-zinc-400 hover:text-orange-400 hover:bg-zinc-800 rounded-lg transition-colors"
+                          title="Add comment"
+                        >
+                          <MessageSquare className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 )
