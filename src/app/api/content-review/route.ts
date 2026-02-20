@@ -4,7 +4,14 @@ import { createClient } from '@supabase/supabase-js'
 // Use service key for admin operations
 const supabaseUrl = 'https://heetkfaggxclbwfrmhln.supabase.co'
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhlZXRrZmFnZ3hjbGJ3ZnJtaGxuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MTM2MjM2NCwiZXhwIjoyMDg2OTM4MzY0fQ.gtiZl6zhq6UKgaUmOqdeKxA7ItZBViwssUIjM7XgBc8'
-const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
+// Create supabase client with auth disabled for service role
+const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    persistSession: false,
+    autoRefreshToken: false
+  }
+})
 
 export async function POST(req: NextRequest) {
   try {
