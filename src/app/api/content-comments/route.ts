@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
           title: `Content issue: ${postTitle}`,
           description: `**URL:** ${postUrl}\n\n**Issue:**\n${comment}`,
           status: 'pending',
-          assigned_to: null,
+          assigned_to: 'Bellatrix',
           priority: 'normal'
         })
         .select()
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
           title: `✨ Learning: ${postTitle}`,
           description: `**URL:** ${postUrl}\n\n**What worked:**\n${comment}\n\n**Category:** content_quality`,
           status: 'completed',
-          assigned_to: null,
+          assigned_to: 'System',
           priority: 'low',
           completed_at: new Date().toISOString()
         })
