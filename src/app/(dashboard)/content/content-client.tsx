@@ -43,7 +43,25 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
   const getPostUrl = (post: BlogPost) => {
     const site = getSite(post.site_id)
     if (!site?.domain) return null
-    // URL format: /{category}/blog/{slug}
+    
+    // Special handling for Christmas site (thebestchristmas.co)
+    if (site.id === 'christmas' || site.domain.includes('thebestchristmas')) {
+      if (post.category?.startsWith('recipes/')) {
+        const subcategory = post.category.split('/')[1]
+        return `https://${site.domain}/christmas-recipes/${subcategory}/${post.slug}/`
+      }
+      if (post.category?.startsWith('crafts/')) {
+        const subcategory = post.category.split('/')[1]
+        return `https://${site.domain}/christmas-crafts/${subcategory}/${post.slug}/`
+      }
+      if (post.category?.startsWith('blog/')) {
+        return `https://${site.domain}/blog/${post.slug}/`
+      }
+      // Fallback
+      return `https://${site.domain}/blog/${post.slug}/`
+    }
+    
+    // Directory sites (LV, Savannah, Denver) - format: /{category}/blog/{slug}
     if (post.category) {
       return `https://${site.domain}/${post.category}/blog/${post.slug}`
     }
