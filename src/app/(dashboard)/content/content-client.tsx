@@ -113,7 +113,8 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
           postTitle: commentModal.post.title,
           postUrl: commentModal.url,
           comment: commentText,
-          type: commentType
+          type: commentType,
+          siteId: commentModal.post.site_id
         })
       })
 

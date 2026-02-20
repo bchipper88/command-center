@@ -13,15 +13,28 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
   }
 })
 
+// Map site IDs to CEO agents
+const CEO_ASSIGNMENTS: Record<string, string> = {
+  christmas: 'Jovie',
+  lv: 'Molly',
+  savannah: 'Hermione',
+  // Denver and Jurassic don't have CEOs yet - default to Bellatrix
+}
+
 export async function POST(req: NextRequest) {
   try {
-    const { postId, postTitle, postUrl, comment, type } = await req.json()
+    const { postId, postTitle, postUrl, comment, type, siteId } = await req.json()
 
     if (!comment || !type || !postId) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
     if (type === 'issue') {
+      // Assign to site CEO if available, otherwise Bellatrix
+      const assignedTo = siteId && CEO_ASSIGNMENTS[siteId] 
+        ? CEO_ASSIGNMENTS[siteId] 
+        : 'Bellatrix'
+
       // Create a task
       const { data, error } = await supabase
         .from('tasks')
@@ -29,7 +42,7 @@ export async function POST(req: NextRequest) {
           title: `Content issue: ${postTitle}`,
           description: `**URL:** ${postUrl}\n\n**Issue:**\n${comment}`,
           status: 'todo',
-          assigned_to: 'Bellatrix',
+          assigned_to: assignedTo,
           priority: 'medium'
         })
         .select()
