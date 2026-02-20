@@ -14,5 +14,14 @@ export default async function ContentPage() {
     supabase.from('sites').select('id, name, domain') as unknown as { data: Pick<Site, 'id' | 'name' | 'domain'>[] | null },
   ])
 
+  // Debug: Log a sample of IDs from the server
+  if (posts && posts.length > 0) {
+    const triflePost = posts.find(p => p.title?.includes('Trifle'))
+    if (triflePost) {
+      console.log('[Server] Christmas Trifle ID:', triflePost.id)
+    }
+    console.log('[Server] Sample post IDs:', posts.slice(0, 3).map(p => ({ title: p.title?.substring(0, 30), id: p.id })))
+  }
+
   return <ContentClient posts={posts || []} sites={sites || []} />
 }

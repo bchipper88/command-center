@@ -24,6 +24,21 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
 
   // Initialize reviewed posts from database
   useEffect(() => {
+    console.log('[Client Init] Total posts received:', posts.length)
+    const triflePost = posts.find(p => p.title?.includes('Trifle'))
+    if (triflePost) {
+      console.log('[Client Init] Christmas Trifle post:', {
+        id: triflePost.id,
+        title: triflePost.title,
+        reviewed: triflePost.reviewed
+      })
+    }
+    console.log('[Client Init] Sample IDs:', posts.slice(0, 3).map(p => ({ 
+      title: p.title?.substring(0, 30), 
+      id: p.id,
+      reviewed: p.reviewed 
+    })))
+    
     const reviewed = new Set(posts.filter(p => p.reviewed).map(p => p.id))
     setReviewedPosts(reviewed)
   }, [posts])
