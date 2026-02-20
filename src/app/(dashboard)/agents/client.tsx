@@ -65,12 +65,11 @@ function getSoulPreview(soul: string | null): string {
 
 export function AgentsClient() {
   const [agents, setAgents] = useState<Agent[]>([])
-  const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<string | null>(null)
 
   useEffect(() => {
     supabase.from('agents').select('*').order('tier').order('name')
-      .then(({ data }) => { if (data) setAgents(data); setLoading(false) })
+      .then(({ data }) => { if (data) setAgents(data) })
   }, [])
 
   // Group agents by tier
