@@ -1,11 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { supabase } from '@/lib/supabase'
 
 type Agent = {
   id: string
@@ -68,29 +67,6 @@ function getSoulPreview(soul: string | null): string {
 
 export function AgentsClient({ agents }: Props) {
   const [filter, setFilter] = useState<string | null>(null)
-  const [agentStats, setAgentStats] = useState<Record<string, { tasks: number; messages: number }>>({})
-
-  // Fetch real stats on mount
-  useEffect(() => {
-    async function fetchStats() {
-      const { data } = await supabase
-        .from('agent_activity')
-        .select('agent_name, category')
-      
-      if (data) {
-        const stats: Record<string, { tasks: number; messages: number }> = {}
-        data.forEach(row => {
-          if (!stats[row.agent_name]) {
-            stats[row.agent_name] = { tasks: 0, messages: 0 }
-          }
-          if (row.category === 'task') stats[row.agent_name].tasks++
-          else if (row.category === 'message') stats[row.agent_name].messages++
-        })
-        setAgentStats(stats)
-      }
-    }
-    fetchStats()
-  }, [])
 
   // Group agents by tier
   const tiers = ['command', 'ceo', 'operative']
@@ -105,10 +81,6 @@ export function AgentsClient({ agents }: Props) {
   const activeAgents = agents.filter(a => a.status === 'active').length
   const ceoCount = agents.filter(a => a.tier === 'ceo').length
   const operativeCount = agents.filter(a => a.tier === 'operative').length
-
-  const getAgentStats = (agentName: string) => {
-    return agentStats[agentName] || { tasks: 0, messages: 0 }
-  }
 
   return (
     <div className="space-y-6">
