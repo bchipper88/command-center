@@ -149,6 +149,9 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
           <div className="font-bold text-red-400 mb-2">DEBUG: Christmas Trifle URL Generation</div>
           <div>Post slug: {triflePost.slug}</div>
           <div>Post category: {triflePost.category}</div>
+          <div>Category as JSON: {JSON.stringify(triflePost.category)}</div>
+          <div>Category length: {triflePost.category?.length}</div>
+          <div>Category includes slash: {String(triflePost.category?.includes('/'))}</div>
           <div>Site ID: {christmasSite.id}</div>
           <div>Site domain: {christmasSite.domain}</div>
           <div>site.id === &apos;christmas&apos;: {String(christmasSite.id === 'christmas')}</div>
