@@ -42,28 +42,51 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
   
   const getPostUrl = (post: BlogPost) => {
     const site = getSite(post.site_id)
-    if (!site?.domain) return null
+    if (!site?.domain) {
+      console.log('[URL Debug] No domain for site:', post.site_id)
+      return null
+    }
+    
+    console.log('[URL Debug]', {
+      slug: post.slug,
+      siteId: site.id,
+      domain: site.domain,
+      category: post.category,
+      isChristmas: site.id === 'christmas',
+      domainIncludes: site.domain.includes('thebestchristmas'),
+      categoryStartsWithRecipes: post.category?.startsWith('recipes/')
+    })
     
     // Special handling for Christmas site (thebestchristmas.co)
     if (site.id === 'christmas' || site.domain.includes('thebestchristmas')) {
       if (post.category?.startsWith('recipes/')) {
         const subcategory = post.category.split('/')[1]
-        return `https://${site.domain}/christmas-recipes/${subcategory}/${post.slug}/`
+        const url = `https://${site.domain}/christmas-recipes/${subcategory}/${post.slug}/`
+        console.log('[URL Debug] Generated recipe URL:', url)
+        return url
       }
       if (post.category?.startsWith('crafts/')) {
         const subcategory = post.category.split('/')[1]
-        return `https://${site.domain}/christmas-crafts/${subcategory}/${post.slug}/`
+        const url = `https://${site.domain}/christmas-crafts/${subcategory}/${post.slug}/`
+        console.log('[URL Debug] Generated craft URL:', url)
+        return url
       }
       if (post.category?.startsWith('blog/')) {
         // Blog posts may have subdirectories (e.g. blog/2026/slug)
         const categoryPath = post.category.substring(5) // Remove "blog/" prefix
         if (categoryPath) {
-          return `https://${site.domain}/blog/${categoryPath}/${post.slug}/`
+          const url = `https://${site.domain}/blog/${categoryPath}/${post.slug}/`
+          console.log('[URL Debug] Generated blog URL with subdirectory:', url)
+          return url
         }
-        return `https://${site.domain}/blog/${post.slug}/`
+        const url = `https://${site.domain}/blog/${post.slug}/`
+        console.log('[URL Debug] Generated blog URL:', url)
+        return url
       }
       // Fallback
-      return `https://${site.domain}/blog/${post.slug}/`
+      const url = `https://${site.domain}/blog/${post.slug}/`
+      console.log('[URL Debug] Fallback URL for Christmas:', url)
+      return url
     }
     
     // Directory sites (LV, Savannah, Denver) - format: /{category}/blog/{slug}
