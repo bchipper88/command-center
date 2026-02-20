@@ -138,22 +138,28 @@ export function CommsClient() {
           >
             All
           </button>
-          {Object.entries(stats.byAgent).map(([agent, agentStats]) => (
-            <button
-              key={agent}
-              onClick={() => setFilter(filter === agent ? null : agent)}
-              className={`px-3 py-1 rounded-full text-sm transition-colors flex items-center gap-2 ${
-                filter === agent ? 'bg-white/20 text-white' : 'bg-white/5 text-neutral-400 hover:bg-white/10'
-              }`}
-            >
-              <span className={agentColors[agent] || 'text-white'}>{agent}</span>
-              {agentStats.unread > 0 && (
-                <span className="bg-amber-500/20 text-amber-400 text-xs px-1.5 rounded-full">
-                  {agentStats.unread}
+          {Object.entries(stats.byAgent).map(([agent, agentStats]) => {
+            const totalMessages = agentStats.sent + agentStats.received
+            return (
+              <button
+                key={agent}
+                onClick={() => setFilter(filter === agent ? null : agent)}
+                className={`px-3 py-1 rounded-full text-sm transition-colors flex items-center gap-2 ${
+                  filter === agent ? 'bg-white/20 text-white' : 'bg-white/5 text-neutral-400 hover:bg-white/10'
+                }`}
+              >
+                <span className={agentColors[agent] || 'text-white'}>{agent}</span>
+                <span className="bg-white/10 text-neutral-300 text-xs px-1.5 rounded-full">
+                  {totalMessages}
                 </span>
-              )}
-            </button>
-          ))}
+                {agentStats.unread > 0 && (
+                  <span className="bg-amber-500/20 text-amber-400 text-xs px-1.5 rounded-full border border-amber-500/30">
+                    {agentStats.unread}
+                  </span>
+                )}
+              </button>
+            )
+          })}
         </div>
       )}
 
