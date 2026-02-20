@@ -15,8 +15,8 @@ export async function POST(req: NextRequest) {
       .insert({
         title: `✅ Reviewed: ${postTitle}`,
         description: `**URL:** ${postUrl}\n\nContent reviewed - no issues found.`,
-        status: 'completed',
-        assigned_to: null,
+        status: 'done',
+        assigned_to: 'System',
         priority: 'low',
         completed_at: new Date().toISOString()
       })
