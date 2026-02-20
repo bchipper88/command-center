@@ -115,51 +115,56 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
   }
 
   const handleMarkReviewed = async (post: BlogPost, url: string) => {
-    try {
-      const response = await fetch('/api/content-review', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          postId: post.id,
-          postTitle: post.title,
-          postUrl: url
-        })
-      })
-
-      if (response.ok) {
-        // Update local state to show reviewed immediately
-        setReviewedPosts(prev => new Set(prev).add(post.id))
+    const isCurrentlyReviewed = reviewedPosts.has(post.id)
+    
+    // Toggle local state immediately for instant feedback
+    setReviewedPosts(prev => {
+      const newSet = new Set(prev)
+      if (isCurrentlyReviewed) {
+        newSet.delete(post.id)
       } else {
+        newSet.add(post.id)
+      }
+      return newSet
+    })
+    
+    // Only call API if marking as reviewed (not when un-reviewing)
+    if (!isCurrentlyReviewed) {
+      try {
+        const response = await fetch('/api/content-review', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            postId: post.id,
+            postTitle: post.title,
+            postUrl: url
+          })
+        })
+
+        if (!response.ok) {
+          // Revert local state on error
+          setReviewedPosts(prev => {
+            const newSet = new Set(prev)
+            newSet.delete(post.id)
+            return newSet
+          })
+          alert('Failed to mark as reviewed')
+        }
+      } catch (error) {
+        // Revert local state on error
+        setReviewedPosts(prev => {
+          const newSet = new Set(prev)
+          newSet.delete(post.id)
+          return newSet
+        })
+        console.error('Review error:', error)
         alert('Failed to mark as reviewed')
       }
-    } catch (error) {
-      console.error('Review error:', error)
-      alert('Failed to mark as reviewed')
     }
   }
 
-  // Debug: Find trifle post
-  const triflePost = posts.find(p => p.slug === 'christmas-trifle')
-  const christmasSite = sites.find(s => s.id === 'christmas')
-
   return (
     <div className="space-y-6">
-      {triflePost && christmasSite && (
-        <div className="bg-red-900/20 border border-red-500 rounded p-4 text-xs font-mono">
-          <div className="font-bold text-red-400 mb-2">DEBUG: Christmas Trifle URL Generation</div>
-          <div>Post slug: {triflePost.slug}</div>
-          <div>Post category: {triflePost.category}</div>
-          <div>Category as JSON: {JSON.stringify(triflePost.category)}</div>
-          <div>Category length: {triflePost.category?.length}</div>
-          <div>Category includes slash: {String(triflePost.category?.includes('/'))}</div>
-          <div>Site ID: {christmasSite.id}</div>
-          <div>Site domain: {christmasSite.domain}</div>
-          <div>site.id === &apos;christmas&apos;: {String(christmasSite.id === 'christmas')}</div>
-          <div>domain.includes(&apos;thebestchristmas&apos;): {String(christmasSite.domain?.includes('thebestchristmas'))}</div>
-          <div>category?.startsWith(&apos;recipes/&apos;): {String(triflePost.category?.startsWith('recipes/'))}</div>
-          <div className="mt-2 font-bold">Generated URL: {getPostUrl(triflePost)}</div>
-        </div>
-      )}
       <div>
         <h1 className="text-2xl font-bold">Content</h1>
         <p className="text-zinc-400 text-sm">{filteredPosts.length} posts across all sites</p>
