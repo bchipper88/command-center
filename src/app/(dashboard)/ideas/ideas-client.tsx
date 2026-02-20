@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { supabase, CeoIdea } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Lightbulb, Check, X, RefreshCw } from 'lucide-react'
@@ -192,10 +193,13 @@ export function IdeasClient({ ideas: initialIdeas }: { ideas: CeoIdea[] }) {
                 {/* Agent Avatar */}
                 <div className="flex-shrink-0">
                   {agentsWithAvatars.includes(idea.agent_name.toLowerCase()) ? (
-                    <img
+                    <Image
                       src={`/avatars/${idea.agent_name.toLowerCase()}.png`}
                       alt={idea.agent_name}
+                      width={40}
+                      height={40}
                       className="w-10 h-10 rounded-full object-cover ring-2 ring-zinc-600"
+                      unoptimized
                     />
                   ) : (
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-zinc-600 to-zinc-700 ring-2 ring-zinc-600 flex items-center justify-center text-xs font-bold text-zinc-300">

@@ -73,6 +73,22 @@ export function AgentsClient() {
       .then(({ data }) => { if (data) setAgents(data); setLoading(false) })
   }, [])
 
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-white">The Dark Lord&apos;s Court</h1>
+          <p className="text-sm text-neutral-500 font-mono">Summoning agents...</p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="h-64 rounded-lg bg-white/5 animate-pulse" />
+          ))}
+        </div>
+      </div>
+    )
+  }
+
   // Group agents by tier
   const tiers = ['command', 'ceo', 'operative']
   const grouped = tiers.reduce((acc, tier) => {
