@@ -31,11 +31,12 @@ export async function POST(req: NextRequest) {
       success: true,
       taskId: data[0]?.id 
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Review error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json({ 
       error: 'Internal server error', 
-      details: error?.message || 'Unknown error' 
+      details: errorMessage
     }, { status: 500 })
   }
 }
