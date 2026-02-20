@@ -151,9 +151,9 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
           <div>Post category: {triflePost.category}</div>
           <div>Site ID: {christmasSite.id}</div>
           <div>Site domain: {christmasSite.domain}</div>
-          <div>site.id === 'christmas': {String(christmasSite.id === 'christmas')}</div>
-          <div>domain.includes('thebestchristmas'): {String(christmasSite.domain?.includes('thebestchristmas'))}</div>
-          <div>category?.startsWith('recipes/'): {String(triflePost.category?.startsWith('recipes/'))}</div>
+          <div>site.id === &apos;christmas&apos;: {String(christmasSite.id === 'christmas')}</div>
+          <div>domain.includes(&apos;thebestchristmas&apos;): {String(christmasSite.domain?.includes('thebestchristmas'))}</div>
+          <div>category?.startsWith(&apos;recipes/&apos;): {String(triflePost.category?.startsWith('recipes/'))}</div>
           <div className="mt-2 font-bold">Generated URL: {getPostUrl(triflePost)}</div>
         </div>
       )}
