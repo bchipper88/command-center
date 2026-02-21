@@ -19,7 +19,7 @@ type Comment = {
   created_at: string
 }
 
-export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick<Site, 'id' | 'name' | 'domain'>[] }) {
+export function ContentClient({ posts, sites, commentCounts }: { posts: BlogPost[]; sites: Pick<Site, 'id' | 'name' | 'domain'>[]; commentCounts: Record<string, number> }) {
   const searchParams = useSearchParams()
   const initialSite = searchParams.get('site') || 'all'
   const [selectedSite, setSelectedSite] = useState(initialSite)
@@ -375,10 +375,15 @@ export function ContentClient({ posts, sites }: { posts: BlogPost[]; sites: Pick
                         </button>
                         <button
                           onClick={() => setCommentModal({ post, url: url || '' })}
-                          className="p-2 text-zinc-400 hover:text-orange-400 hover:bg-zinc-800 rounded-lg transition-colors"
+                          className="relative p-2 text-zinc-400 hover:text-orange-400 hover:bg-zinc-800 rounded-lg transition-colors"
                           title="Add comment"
                         >
                           <MessageSquare className="w-4 h-4" />
+                          {(commentCounts[post.id] || 0) > 0 && (
+                            <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center bg-orange-500 text-white text-[10px] font-bold rounded-full px-1">
+                              {commentCounts[post.id]}
+                            </span>
+                          )}
                         </button>
                       </div>
                     </td>

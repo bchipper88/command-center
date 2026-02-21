@@ -9,12 +9,20 @@ export default async function ContentPage() {
   const [
     { data: posts },
     { data: sites },
+    { data: commentRows },
   ] = await Promise.all([
     supabase
       .from('blog_posts')
       .select('id, site_id, slug, title, target_keyword, keyword_volume, keyword_difficulty, category, status, word_count, image_url, pr_url, published_at, created_at, updated_at, reviewed') as unknown as { data: BlogPost[] | null },
     supabase.from('sites').select('id, name, domain') as unknown as { data: Pick<Site, 'id' | 'name' | 'domain'>[] | null },
+    supabase.from('tasks').select('post_id').not('post_id', 'is', null) as unknown as { data: { post_id: string }[] | null },
   ])
 
-  return <ContentClient posts={posts || []} sites={sites || []} />
+  // Build comment count map
+  const commentCounts: Record<string, number> = {}
+  for (const row of commentRows || []) {
+    commentCounts[row.post_id] = (commentCounts[row.post_id] || 0) + 1
+  }
+
+  return <ContentClient posts={posts || []} sites={sites || []} commentCounts={commentCounts} />
 }
