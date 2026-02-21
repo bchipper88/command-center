@@ -12,7 +12,7 @@ const WORKSPACE_MAP: Record<string, string> = {
   'jurassic': '/home/ubuntu/.openclaw/workspace-jurassic',
 }
 
-const STANDARD_FILES = ['SOUL.md', 'HEARTBEAT.md', 'AGENTS.md', 'TOOLS.md', 'KEYWORDS.md']
+const STANDARD_FILES = ['SOUL.md', 'HEARTBEAT.md', 'AGENTS.md', 'TOOLS.md', 'KEYWORDS.md', 'SKILLS.md']
 
 export async function GET(
   request: NextRequest,
