@@ -173,7 +173,7 @@ export function SeoClient({ keywords, sites, gscSnapshots }: {
                   </TableCell>
                 </TableRow>
               ) : (
-                filtered.slice(0, 100).map(k => (
+                filtered.slice(0, 250).map(k => (
                   <TableRow key={k.id} className="border-white/5 hover:bg-white/5">
                     <TableCell className="text-white text-sm font-mono">{k.keyword}</TableCell>
                     <TableCell>
