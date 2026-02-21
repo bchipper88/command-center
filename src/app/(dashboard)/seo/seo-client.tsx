@@ -15,7 +15,7 @@ const siteChartColors: Record<string, string> = {
   jurassic: '#ef4444',
 }
 
-type SortKey = 'keyword' | 'site_id' | 'volume' | 'gsc_position' | 'gsc_impressions' | 'gsc_clicks' | 'gsc_ctr'
+type SortKey = 'keyword' | 'site_id' | 'volume' | 'gsc_position' | 'gsc_impressions' | 'gsc_clicks' | 'gsc_ctr' | 'vol_per_pos'
 type SortDir = 'asc' | 'desc'
 
 function PositionBadge({ pos }: { pos: number | null }) {
@@ -47,12 +47,29 @@ export function SeoClient({ keywords, sites, gscSnapshots }: {
     }
   }
 
+  const getVolPerPos = (k: Keyword) => {
+    if (!k.volume || !k.gsc_position || k.gsc_position === 0) return null
+    return Math.round(k.volume / k.gsc_position)
+  }
+
   const filtered = useMemo(() => {
     return keywords
       .filter(k => siteFilter === 'all' || k.site_id === siteFilter)
       .sort((a, b) => {
-        const aVal = a[sortKey] ?? (sortDir === 'asc' ? Infinity : -Infinity)
-        const bVal = b[sortKey] ?? (sortDir === 'asc' ? Infinity : -Infinity)
+        let aVal: string | number | null
+        let bVal: string | number | null
+        
+        if (sortKey === 'vol_per_pos') {
+          aVal = getVolPerPos(a)
+          bVal = getVolPerPos(b)
+        } else {
+          aVal = a[sortKey] ?? null
+          bVal = b[sortKey] ?? null
+        }
+        
+        if (aVal === null && bVal === null) return 0
+        if (aVal === null) return sortDir === 'asc' ? 1 : 1
+        if (bVal === null) return sortDir === 'asc' ? -1 : -1
         
         if (typeof aVal === 'string' && typeof bVal === 'string') {
           return sortDir === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal)
@@ -163,12 +180,13 @@ export function SeoClient({ keywords, sites, gscSnapshots }: {
                 <SortableHeader column="gsc_impressions" label="IMPR" align="right" />
                 <SortableHeader column="gsc_clicks" label="CLICKS" align="right" />
                 <SortableHeader column="gsc_ctr" label="CTR" align="right" />
+                <SortableHeader column="vol_per_pos" label="VOL/POS" align="right" />
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center text-neutral-600 font-mono py-8">
+                  <TableCell colSpan={9} className="text-center text-neutral-600 font-mono py-8">
                     No keywords found. Seed data to populate.
                   </TableCell>
                 </TableRow>
@@ -203,6 +221,14 @@ export function SeoClient({ keywords, sites, gscSnapshots }: {
                     </TableCell>
                     <TableCell className="text-right font-mono text-xs text-neutral-400">
                       {k.gsc_ctr ? `${k.gsc_ctr.toFixed(1)}%` : '—'}
+                    </TableCell>
+                    <TableCell className="text-right font-mono text-xs font-bold">
+                      {(() => {
+                        const vp = getVolPerPos(k)
+                        if (!vp) return <span className="text-neutral-600">—</span>
+                        const color = vp >= 1000 ? 'text-emerald-400' : vp >= 100 ? 'text-amber-400' : 'text-neutral-400'
+                        return <span className={color}>{vp.toLocaleString()}</span>
+                      })()}
                     </TableCell>
                   </TableRow>
                 ))
