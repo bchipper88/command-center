@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { BlogPost, Site } from '@/lib/supabase'
 import { useSearchParams } from 'next/navigation'
 import { FileText, ExternalLink, MessageSquare, X, CheckCircle, ChevronRight, ChevronDown } from 'lucide-react'
+import { TaskStatus } from './page'
 
 type CommentModal = {
   post: BlogPost
@@ -19,7 +20,7 @@ type Comment = {
   created_at: string
 }
 
-export function ContentClient({ posts, sites, commentCounts }: { posts: BlogPost[]; sites: Pick<Site, 'id' | 'name' | 'domain'>[]; commentCounts: Record<string, number> }) {
+export function ContentClient({ posts, sites, taskStatus }: { posts: BlogPost[]; sites: Pick<Site, 'id' | 'name' | 'domain'>[]; taskStatus: Record<string, TaskStatus> }) {
   const searchParams = useSearchParams()
   const initialSite = searchParams.get('site') || 'all'
   const [selectedSite, setSelectedSite] = useState(initialSite)
@@ -299,6 +300,7 @@ export function ContentClient({ posts, sites, commentCounts }: { posts: BlogPost
                   <th className="p-4 whitespace-nowrap">Site</th>
                   <th className="p-4 whitespace-nowrap">Keyword</th>
                   <th className="p-4 whitespace-nowrap">Status</th>
+                  <th className="p-4 whitespace-nowrap">Issues</th>
                   <th className="p-4 whitespace-nowrap">Date</th>
                   <th className="p-4 whitespace-nowrap"></th>
                 </tr>
@@ -354,6 +356,36 @@ export function ContentClient({ posts, sites, commentCounts }: { posts: BlogPost
                         {post.status}
                       </span>
                     </td>
+                    <td className="p-4">
+                      {(() => {
+                        const status = taskStatus[post.id]
+                        if (!status) return <span className="text-xs text-zinc-600">—</span>
+                        
+                        const lastUpdate = status.lastUpdated 
+                          ? new Date(status.lastUpdated).toLocaleDateString() 
+                          : 'unknown'
+                        
+                        if (status.done === status.total) {
+                          return (
+                            <span className="text-xs px-2 py-1 rounded bg-green-500/20 text-green-400" title={`Last updated: ${lastUpdate}`}>
+                              ✓ {status.total} fixed
+                            </span>
+                          )
+                        } else if (status.done > 0) {
+                          return (
+                            <span className="text-xs px-2 py-1 rounded bg-yellow-500/20 text-yellow-400" title={`Last updated: ${lastUpdate}`}>
+                              {status.done}/{status.total} fixed
+                            </span>
+                          )
+                        } else {
+                          return (
+                            <span className="text-xs px-2 py-1 rounded bg-red-500/20 text-red-400">
+                              {status.total} open
+                            </span>
+                          )
+                        }
+                      })()}
+                    </td>
                     <td className="p-4 text-sm text-zinc-500">
                       {post.published_at 
                         ? new Date(post.published_at).toLocaleDateString()
@@ -379,9 +411,9 @@ export function ContentClient({ posts, sites, commentCounts }: { posts: BlogPost
                           title="Add comment"
                         >
                           <MessageSquare className="w-4 h-4" />
-                          {(commentCounts[post.id] || 0) > 0 && (
+                          {taskStatus[post.id] && taskStatus[post.id].total > 0 && (
                             <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center bg-orange-500 text-white text-[10px] font-bold rounded-full px-1">
-                              {commentCounts[post.id]}
+                              {taskStatus[post.id].total}
                             </span>
                           )}
                         </button>
@@ -392,7 +424,7 @@ export function ContentClient({ posts, sites, commentCounts }: { posts: BlogPost
                   {/* Expanded Comment History */}
                   {isExpanded && (
                     <tr key={`${post.id}-expanded`}>
-                      <td colSpan={6} className="p-0 bg-zinc-800/20">
+                      <td colSpan={7} className="p-0 bg-zinc-800/20">
                         <div className="p-6 border-t border-zinc-700/50">
                           <h4 className="text-sm font-medium text-white mb-4">Comment History</h4>
                           {isLoadingComments ? (
