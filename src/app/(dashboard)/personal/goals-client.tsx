@@ -63,6 +63,13 @@ export function GoalsClient({ initialGoals, initialMilestones, initialSnapshots 
 
   return (
     <div className="space-y-6">
+      {/* Core Truth */}
+      <h2 className="text-xl font-semibold text-center py-4">
+        <span className="text-red-400">Not changing = Pain.</span>
+        {' '}
+        <span className="text-green-400">Changing = Pleasure.</span>
+      </h2>
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -172,14 +179,7 @@ export function GoalsClient({ initialGoals, initialMilestones, initialSnapshots 
         })}
       </div>
 
-      {/* Motivation Footer */}
-      <div className="text-center py-6 border-t border-white/5">
-        <p className="text-neutral-500 text-sm">
-          <span className="text-red-400">Not changing = Pain.</span>
-          {' '}
-          <span className="text-green-400">Changing = Pleasure.</span>
-        </p>
-      </div>
+
     </div>
   )
 }
