@@ -4,6 +4,11 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { ReactNode, useState } from 'react'
 
+const personalNav = [
+  { href: '/personal', label: 'Goals', icon: '🎯' },
+  { href: '/personal/tasks', label: 'My Tasks', icon: '✅' },
+]
+
 const doNav = [
   { href: '/tasks', label: 'Tasks', icon: '📋' },
   { href: '/prs', label: 'PRs to Review', icon: '🔀' },
@@ -58,9 +63,20 @@ export function Shell({ children }: { children: ReactNode }) {
       <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
         {/* Dashboard */}
         <Link href="/" className={linkClass('/')} onClick={closeMobileMenu}>
-          <span className="text-base">🎯</span>
+          <span className="text-base">🏠</span>
           <span className="font-medium">Dashboard</span>
         </Link>
+
+        {/* PERSONAL section */}
+        <div className="pt-4 pb-1 px-3">
+          <span className="text-[10px] font-mono text-purple-600/60 tracking-widest uppercase">Personal</span>
+        </div>
+        {personalNav.map((item) => (
+          <Link key={item.href} href={item.href} className={linkClass(item.href)} onClick={closeMobileMenu}>
+            <span className="text-base">{item.icon}</span>
+            <span className="font-medium">{item.label}</span>
+          </Link>
+        ))}
 
         {/* DO section */}
         <div className="pt-4 pb-1 px-3">

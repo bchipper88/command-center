@@ -172,4 +172,70 @@ export type CeoIdea = {
   created_at: string
   updated_at: string
 }
-// Cache bust: Fri Feb 20 19:30 UTC 2026 - Force no-cache headers
+// Personal Goals Types
+export type PersonalGoal = {
+  id: string
+  name: string
+  category: 'weight' | 'business' | 'golf' | 'health'
+  target_value: string | null
+  current_value: string | null
+  target_date: string | null
+  why: string | null
+  reframe: string | null
+  status: 'active' | 'achieved' | 'paused'
+  created_at: string
+  updated_at: string
+}
+
+export type GoalMilestone = {
+  id: string
+  goal_id: string
+  name: string
+  target_value: string | null
+  target_date: string | null
+  achieved: boolean
+  achieved_at: string | null
+  sort_order: number
+  created_at: string
+}
+
+export type PersonalHabit = {
+  id: string
+  goal_id: string
+  name: string
+  frequency: 'daily' | 'weekly'
+  active: boolean
+  created_at: string
+}
+
+export type HabitLog = {
+  id: string
+  habit_id: string
+  date: string
+  completed: boolean
+  notes: string | null
+  created_at: string
+}
+
+export type GoalSnapshot = {
+  id: string
+  goal_id: string
+  date: string
+  value: string
+  notes: string | null
+  created_at: string
+}
+
+export type PersonalTask = {
+  id: string
+  goal_id: string | null
+  title: string
+  description: string | null
+  due_date: string | null
+  priority: 'low' | 'medium' | 'high'
+  status: 'todo' | 'in_progress' | 'done'
+  completed_at: string | null
+  created_at: string
+}
+
+// Cache bust: Mon Mar 02 01:15 UTC 2026 - Added personal goals types
