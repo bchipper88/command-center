@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
-import { ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react'
+import { ChevronUp, ChevronDown, ChevronsUpDown, Eye, EyeOff } from 'lucide-react'
 import type { Keyword, GscSnapshot } from '@/lib/supabase'
 
 const siteChartColors: Record<string, string> = {
@@ -37,6 +37,29 @@ export function SeoClient({ keywords, sites, gscSnapshots }: {
   const [siteFilter, setSiteFilter] = useState<string>('all')
   const [sortKey, setSortKey] = useState<SortKey>('gsc_impressions')
   const [sortDir, setSortDir] = useState<SortDir>('desc')
+  
+  // Track which sites are visible in the chart (all visible by default)
+  const [visibleSites, setVisibleSites] = useState<Set<string>>(() => new Set(sites.map(s => s.id)))
+
+  const toggleSiteVisibility = (siteId: string) => {
+    setVisibleSites(prev => {
+      const next = new Set(prev)
+      if (next.has(siteId)) {
+        next.delete(siteId)
+      } else {
+        next.add(siteId)
+      }
+      return next
+    })
+  }
+
+  const showAllSites = () => {
+    setVisibleSites(new Set(sites.map(s => s.id)))
+  }
+
+  const hideAllSites = () => {
+    setVisibleSites(new Set())
+  }
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -140,7 +163,49 @@ export function SeoClient({ keywords, sites, gscSnapshots }: {
       {chartData.length > 0 && (
         <Card className="glass-card bg-transparent border-white/5">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-mono text-neutral-400 tracking-wider">CLICK TREND (GSC)</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-mono text-neutral-400 tracking-wider">CLICK TREND (GSC)</CardTitle>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={showAllSites}
+                  className="text-xs font-mono text-neutral-500 hover:text-white transition-colors px-2 py-1 rounded hover:bg-white/5"
+                >
+                  All
+                </button>
+                <span className="text-neutral-600">|</span>
+                <button
+                  onClick={hideAllSites}
+                  className="text-xs font-mono text-neutral-500 hover:text-white transition-colors px-2 py-1 rounded hover:bg-white/5"
+                >
+                  None
+                </button>
+              </div>
+            </div>
+            {/* Site toggle buttons */}
+            <div className="flex flex-wrap gap-2 mt-3">
+              {sites.map(s => {
+                const isVisible = visibleSites.has(s.id)
+                const color = siteChartColors[s.id] || '#888'
+                return (
+                  <button
+                    key={s.id}
+                    onClick={() => toggleSiteVisibility(s.id)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-mono transition-all ${
+                      isVisible 
+                        ? 'bg-white/10 border border-white/20' 
+                        : 'bg-transparent border border-white/5 opacity-50 hover:opacity-75'
+                    }`}
+                    style={{ 
+                      borderColor: isVisible ? color : undefined,
+                      color: isVisible ? color : '#666'
+                    }}
+                  >
+                    {isVisible ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                    {s.name}
+                  </button>
+                )
+              })}
+            </div>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={250}>
@@ -150,7 +215,7 @@ export function SeoClient({ keywords, sites, gscSnapshots }: {
                 <YAxis tick={{ fontSize: 10, fill: '#666' }} />
                 <Tooltip contentStyle={{ background: '#111', border: '1px solid #333', borderRadius: 8, fontSize: 12 }} />
                 <Legend />
-                {sites.map(s => (
+                {sites.filter(s => visibleSites.has(s.id)).map(s => (
                   <Line key={s.id} type="monotone" dataKey={s.id} name={s.name} stroke={siteChartColors[s.id] || '#888'} strokeWidth={2} dot={false} />
                 ))}
               </LineChart>
