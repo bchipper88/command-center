@@ -17,6 +17,7 @@ const siteChartColors: Record<string, string> = {
 
 type SortKey = 'keyword' | 'site_id' | 'volume' | 'gsc_position' | 'gsc_impressions' | 'gsc_clicks' | 'gsc_ctr' | 'vol_per_pos'
 type SortDir = 'asc' | 'desc'
+type ChartMetric = 'clicks' | 'impressions'
 
 function PositionBadge({ pos }: { pos: number | null }) {
   if (!pos) return <span className="text-neutral-600">—</span>
@@ -40,6 +41,9 @@ export function SeoClient({ keywords, sites, gscSnapshots }: {
   
   // Track which sites are visible in the chart (all visible by default)
   const [visibleSites, setVisibleSites] = useState<Set<string>>(() => new Set(sites.map(s => s.id)))
+  
+  // Track which metric to show (clicks or impressions)
+  const [chartMetric, setChartMetric] = useState<ChartMetric>('clicks')
 
   const toggleSiteVisibility = (siteId: string) => {
     setVisibleSites(prev => {
@@ -107,10 +111,11 @@ export function SeoClient({ keywords, sites, gscSnapshots }: {
     const byDate: Record<string, Record<string, number>> = {}
     gscSnapshots.forEach(s => {
       if (!byDate[s.date]) byDate[s.date] = {}
-      byDate[s.date][s.site_id] = s.total_clicks || 0
+      const value = chartMetric === 'clicks' ? s.total_clicks : s.total_impressions
+      byDate[s.date][s.site_id] = value || 0
     })
-    return Object.entries(byDate).map(([date, clicks]) => ({ date, ...clicks })).sort((a, b) => a.date.localeCompare(b.date))
-  }, [gscSnapshots])
+    return Object.entries(byDate).map(([date, values]) => ({ date, ...values })).sort((a, b) => a.date.localeCompare(b.date))
+  }, [gscSnapshots, chartMetric])
 
   const totalClicks = keywords.reduce((s, k) => s + (k.gsc_clicks || 0), 0)
   const totalImpressions = keywords.reduce((s, k) => s + (k.gsc_impressions || 0), 0)
@@ -164,7 +169,34 @@ export function SeoClient({ keywords, sites, gscSnapshots }: {
         <Card className="glass-card bg-transparent border-white/5">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-mono text-neutral-400 tracking-wider">CLICK TREND (GSC)</CardTitle>
+              <div className="flex items-center gap-3">
+                <CardTitle className="text-sm font-mono text-neutral-400 tracking-wider">
+                  {chartMetric === 'clicks' ? 'CLICK' : 'IMPRESSION'} TREND (GSC)
+                </CardTitle>
+                {/* Metric toggle */}
+                <div className="flex items-center bg-white/5 rounded-lg p-0.5">
+                  <button
+                    onClick={() => setChartMetric('clicks')}
+                    className={`px-3 py-1 text-xs font-mono rounded-md transition-all ${
+                      chartMetric === 'clicks'
+                        ? 'bg-emerald-500/20 text-emerald-400'
+                        : 'text-neutral-500 hover:text-neutral-300'
+                    }`}
+                  >
+                    Clicks
+                  </button>
+                  <button
+                    onClick={() => setChartMetric('impressions')}
+                    className={`px-3 py-1 text-xs font-mono rounded-md transition-all ${
+                      chartMetric === 'impressions'
+                        ? 'bg-blue-500/20 text-blue-400'
+                        : 'text-neutral-500 hover:text-neutral-300'
+                    }`}
+                  >
+                    Impressions
+                  </button>
+                </div>
+              </div>
               <div className="flex items-center gap-1">
                 <button
                   onClick={showAllSites}
