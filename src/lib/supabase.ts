@@ -238,4 +238,27 @@ export type PersonalTask = {
   created_at: string
 }
 
-// Cache bust: Mon Mar 02 01:15 UTC 2026 - Added personal goals types
+// Project Types
+export type Project = {
+  id: string
+  name: string
+  description: string | null
+  status: 'planning' | 'in_progress' | 'blocked' | 'completed'
+  priority: 'low' | 'medium' | 'high'
+  site_id: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type ProjectTask = {
+  id: string
+  project_id: string
+  title: string
+  description: string | null
+  status: 'todo' | 'in_progress' | 'done'
+  sort_order: number
+  created_at: string
+  completed_at: string | null
+}
+
+// Cache bust: Tue Mar 03 03:19 UTC 2026 - Added project types
