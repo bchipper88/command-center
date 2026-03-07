@@ -1,9 +1,12 @@
 import { supabase } from '@/lib/supabase'
 import { SeoClient } from './seo-client'
+import { unstable_noStore as noStore } from 'next/cache'
 
 export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 export default async function SeoPage() {
+  noStore()
   const [
     { data: keywords },
     { data: sites },
