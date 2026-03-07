@@ -13,6 +13,7 @@ const siteChartColors: Record<string, string> = {
   denver: '#a855f7',
   savannah: '#10b981',
   jurassic: '#ef4444',
+  christmas: '#f59e0b',
 }
 
 type SortKey = 'keyword' | 'site_id' | 'volume' | 'gsc_position' | 'gsc_impressions' | 'gsc_clicks' | 'gsc_ctr' | 'vol_per_pos'
