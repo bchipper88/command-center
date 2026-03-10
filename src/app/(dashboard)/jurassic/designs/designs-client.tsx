@@ -178,6 +178,14 @@ function Lightbox({
           
           {design.status === 'approved' && (
             <div className="flex gap-3 pt-3 border-t border-white/10">
+              {design.image_url && (
+                <a
+                  href={`${design.image_url}?fl_attachment=${design.name.toLowerCase().replace(/\s+/g, '-')}`}
+                  className="flex-1 py-2 px-4 bg-green-600 hover:bg-green-500 text-white font-medium rounded-lg transition-colors text-center"
+                >
+                  ⬇️ Download
+                </a>
+              )}
               <button
                 onClick={() => handleStatusChange('printed')}
                 disabled={updating}
