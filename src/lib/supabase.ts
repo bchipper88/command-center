@@ -268,8 +268,9 @@ export type TshirtDesign = {
   concept: string | null
   prompt: string | null
   image_url: string | null
+  final_image_url: string | null
   score: number
-  status: 'pending' | 'approved' | 'rejected' | 'printed'
+  status: 'pending' | 'regenerating' | 'approved' | 'rejected' | 'printed'
   notes: string | null
   created_at: string
 }
