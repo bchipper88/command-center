@@ -216,19 +216,30 @@ function Lightbox({
           )}
           
           {design.status === 'approved' && (
-            <div className="flex gap-3 pt-3 border-t border-white/10">
-              {(design.final_image_url || design.image_url) && (
-                <a
-                  href={`${design.final_image_url || design.image_url}?fl_attachment=${design.name.toLowerCase().replace(/\s+/g, '-')}`}
-                  className="flex-1 py-2 px-4 bg-green-600 hover:bg-green-500 text-white font-medium rounded-lg transition-colors text-center"
-                >
-                  ⬇️ Download {design.final_image_url ? 'Final' : 'Draft'}
-                </a>
-              )}
+            <div className="space-y-3 pt-3 border-t border-white/10">
+              {/* Download buttons - show both if both exist */}
+              <div className="flex gap-3">
+                {design.image_url && (
+                  <a
+                    href={`${design.image_url}?fl_attachment=${design.name.toLowerCase().replace(/\s+/g, '-')}-draft`}
+                    className={`py-2 px-4 ${design.final_image_url ? 'bg-neutral-700 hover:bg-neutral-600' : 'bg-green-600 hover:bg-green-500'} text-white font-medium rounded-lg transition-colors text-center flex-1`}
+                  >
+                    ⬇️ Draft {!design.final_image_url && '(Mini)'}
+                  </a>
+                )}
+                {design.final_image_url && (
+                  <a
+                    href={`${design.final_image_url}?fl_attachment=${design.name.toLowerCase().replace(/\s+/g, '-')}-final`}
+                    className="flex-1 py-2 px-4 bg-green-600 hover:bg-green-500 text-white font-medium rounded-lg transition-colors text-center"
+                  >
+                    ⬇️ Final (1.5 High)
+                  </a>
+                )}
+              </div>
               <button
                 onClick={() => handleStatusChange('printed')}
                 disabled={updating}
-                className="flex-1 py-2 px-4 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-medium rounded-lg transition-colors"
+                className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-medium rounded-lg transition-colors"
               >
                 🖨️ Mark as Printed
               </button>
