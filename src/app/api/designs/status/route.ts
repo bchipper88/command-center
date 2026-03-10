@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
   try {
-    const { id, status } = await request.json()
+    const { id, status, feedback } = await request.json()
     
     if (!id || !status) {
       return NextResponse.json({ error: 'Missing id or status' }, { status: 400 })
@@ -14,9 +14,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
     }
     
+    // Build update object
+    const updateData: Record<string, string> = { status }
+    if (feedback && status === 'rejected') {
+      updateData.notes = `FEEDBACK: ${feedback}`
+    }
+    
     const { error } = await supabase
       .from('tshirt_designs')
-      .update({ status })
+      .update(updateData)
       .eq('id', id)
     
     if (error) {

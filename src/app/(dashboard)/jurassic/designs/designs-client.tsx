@@ -51,14 +51,18 @@ function Lightbox({
 }: { 
   design: TshirtDesign
   onClose: () => void
-  onStatusChange: (id: string, status: string) => void
+  onStatusChange: (id: string, status: string, feedback?: string) => void
 }) {
   const [updating, setUpdating] = useState(false)
+  const [showRejectForm, setShowRejectForm] = useState(false)
+  const [feedback, setFeedback] = useState('')
   
-  const handleStatusChange = async (status: string) => {
+  const handleStatusChange = async (status: string, feedbackText?: string) => {
     setUpdating(true)
-    await onStatusChange(design.id, status)
+    await onStatusChange(design.id, status, feedbackText)
     setUpdating(false)
+    setShowRejectForm(false)
+    setFeedback('')
   }
   
   return (
@@ -121,7 +125,7 @@ function Lightbox({
           </div>
           
           {/* Approve/Deny buttons */}
-          {design.status === 'pending' && (
+          {design.status === 'pending' && !showRejectForm && (
             <div className="flex gap-3 pt-3 border-t border-white/10">
               <button
                 onClick={() => handleStatusChange('approved')}
@@ -131,12 +135,45 @@ function Lightbox({
                 ✓ Approve
               </button>
               <button
-                onClick={() => handleStatusChange('rejected')}
+                onClick={() => setShowRejectForm(true)}
                 disabled={updating}
                 className="flex-1 py-2 px-4 bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white font-medium rounded-lg transition-colors"
               >
                 ✕ Reject
               </button>
+            </div>
+          )}
+          
+          {/* Reject feedback form */}
+          {design.status === 'pending' && showRejectForm && (
+            <div className="pt-3 border-t border-white/10 space-y-3">
+              <label className="block">
+                <span className="text-sm text-gray-400">What should change?</span>
+                <textarea
+                  value={feedback}
+                  onChange={(e) => setFeedback(e.target.value)}
+                  placeholder="e.g., Make the dinosaur bigger, change the font style..."
+                  className="mt-1 w-full px-3 py-2 bg-black/30 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-red-500 resize-none"
+                  rows={3}
+                  autoFocus
+                />
+              </label>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => handleStatusChange('rejected', feedback)}
+                  disabled={updating}
+                  className="flex-1 py-2 px-4 bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white font-medium rounded-lg transition-colors"
+                >
+                  {updating ? 'Submitting...' : '✕ Submit Rejection'}
+                </button>
+                <button
+                  onClick={() => { setShowRejectForm(false); setFeedback(''); }}
+                  disabled={updating}
+                  className="py-2 px-4 bg-neutral-700 hover:bg-neutral-600 disabled:opacity-50 text-white font-medium rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           )}
           
@@ -162,21 +199,22 @@ export function DesignsClient({ designs: initialDesigns }: { designs: TshirtDesi
   const [selectedDesign, setSelectedDesign] = useState<TshirtDesign | null>(null)
   const router = useRouter()
   
-  const handleStatusChange = async (id: string, status: string) => {
+  const handleStatusChange = async (id: string, status: string, feedback?: string) => {
     try {
       const res = await fetch('/api/designs/status', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, status })
+        body: JSON.stringify({ id, status, feedback })
       })
       
       if (res.ok) {
         // Update local state
+        const newNotes = feedback ? `FEEDBACK: ${feedback}` : undefined
         setDesigns(prev => prev.map(d => 
-          d.id === id ? { ...d, status } : d
+          d.id === id ? { ...d, status, notes: newNotes || d.notes } : d
         ))
         if (selectedDesign?.id === id) {
-          setSelectedDesign(prev => prev ? { ...prev, status } : null)
+          setSelectedDesign(prev => prev ? { ...prev, status, notes: newNotes || prev.notes } : null)
         }
         router.refresh()
       }
