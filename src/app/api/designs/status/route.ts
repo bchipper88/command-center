@@ -9,7 +9,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing id or status' }, { status: 400 })
     }
     
-    const validStatuses = ['pending', 'approved', 'rejected', 'printed']
+    const validStatuses = ['pending', 'regenerating', 'approved', 'rejected', 'printed']
     if (!validStatuses.includes(status)) {
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
     }

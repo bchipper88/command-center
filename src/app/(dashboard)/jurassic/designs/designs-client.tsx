@@ -10,6 +10,7 @@ type TshirtDesign = {
   concept: string | null
   prompt: string | null
   image_url: string | null
+  final_image_url: string | null
   score: number
   status: string
   notes: string | null
@@ -19,6 +20,7 @@ type TshirtDesign = {
 function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
     pending: 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30',
+    regenerating: 'bg-purple-500/20 text-purple-400 border border-purple-500/30',
     approved: 'bg-green-500/20 text-green-400 border border-green-500/30',
     rejected: 'bg-red-500/20 text-red-400 border border-red-500/30',
     printed: 'bg-blue-500/20 text-blue-400 border border-blue-500/30',
@@ -74,25 +76,49 @@ function Lightbox({
         className="bg-neutral-900 border border-white/10 rounded-lg max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Image with checkered background for transparency */}
-        <div className="relative" style={{
-          backgroundImage: 'linear-gradient(45deg, #333 25%, transparent 25%), linear-gradient(-45deg, #333 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #333 75%), linear-gradient(-45deg, transparent 75%, #333 75%)',
-          backgroundSize: '20px 20px',
-          backgroundPosition: '0 0, 0 10px, 10px -10px, -10px 0px'
-        }}>
-          {design.image_url && (
-            <img 
-              src={design.image_url} 
-              alt={design.name}
-              className="w-full max-h-[60vh] object-contain"
-            />
-          )}
+        {/* Image comparison - side by side if final exists */}
+        <div className="relative">
           <button
             onClick={onClose}
-            className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white rounded-full w-8 h-8 flex items-center justify-center"
+            className="absolute top-2 right-2 z-10 bg-black/50 hover:bg-black/70 text-white rounded-full w-8 h-8 flex items-center justify-center"
           >
             ✕
           </button>
+          
+          {design.final_image_url ? (
+            // Side-by-side comparison
+            <div className="grid grid-cols-2 gap-1">
+              <div className="relative" style={{
+                backgroundImage: 'linear-gradient(45deg, #333 25%, transparent 25%), linear-gradient(-45deg, #333 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #333 75%), linear-gradient(-45deg, transparent 75%, #333 75%)',
+                backgroundSize: '16px 16px',
+                backgroundPosition: '0 0, 0 8px, 8px -8px, -8px 0px'
+              }}>
+                <div className="absolute top-2 left-2 bg-black/70 text-gray-400 text-xs px-2 py-1 rounded">Draft (Mini)</div>
+                {design.image_url && (
+                  <img src={design.image_url} alt={`${design.name} draft`} className="w-full aspect-square object-contain" />
+                )}
+              </div>
+              <div className="relative" style={{
+                backgroundImage: 'linear-gradient(45deg, #333 25%, transparent 25%), linear-gradient(-45deg, #333 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #333 75%), linear-gradient(-45deg, transparent 75%, #333 75%)',
+                backgroundSize: '16px 16px',
+                backgroundPosition: '0 0, 0 8px, 8px -8px, -8px 0px'
+              }}>
+                <div className="absolute top-2 left-2 bg-green-600/90 text-white text-xs px-2 py-1 rounded">Final (1.5 High)</div>
+                <img src={design.final_image_url} alt={`${design.name} final`} className="w-full aspect-square object-contain" />
+              </div>
+            </div>
+          ) : (
+            // Single image (draft only)
+            <div style={{
+              backgroundImage: 'linear-gradient(45deg, #333 25%, transparent 25%), linear-gradient(-45deg, #333 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #333 75%), linear-gradient(-45deg, transparent 75%, #333 75%)',
+              backgroundSize: '20px 20px',
+              backgroundPosition: '0 0, 0 10px, 10px -10px, -10px 0px'
+            }}>
+              {design.image_url && (
+                <img src={design.image_url} alt={design.name} className="w-full max-h-[60vh] object-contain" />
+              )}
+            </div>
+          )}
         </div>
         
         {/* Details */}
@@ -128,11 +154,11 @@ function Lightbox({
           {design.status === 'pending' && !showRejectForm && (
             <div className="flex gap-3 pt-3 border-t border-white/10">
               <button
-                onClick={() => handleStatusChange('approved')}
+                onClick={() => handleStatusChange('regenerating')}
                 disabled={updating}
                 className="flex-1 py-2 px-4 bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white font-medium rounded-lg transition-colors"
               >
-                ✓ Approve
+                ✓ Approve & Generate 1.5
               </button>
               <button
                 onClick={() => setShowRejectForm(true)}
@@ -176,14 +202,27 @@ function Lightbox({
             </div>
           )}
           
+          {design.status === 'regenerating' && (
+            <div className="pt-3 border-t border-white/10">
+              <div className="flex items-center gap-3 text-purple-400">
+                <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Generating 1.5 High version...</span>
+              </div>
+              <p className="text-sm text-gray-500 mt-2">Bellatrix is regenerating this design at full quality. Check back shortly.</p>
+            </div>
+          )}
+          
           {design.status === 'approved' && (
             <div className="flex gap-3 pt-3 border-t border-white/10">
-              {design.image_url && (
+              {(design.final_image_url || design.image_url) && (
                 <a
-                  href={`${design.image_url}?fl_attachment=${design.name.toLowerCase().replace(/\s+/g, '-')}`}
+                  href={`${design.final_image_url || design.image_url}?fl_attachment=${design.name.toLowerCase().replace(/\s+/g, '-')}`}
                   className="flex-1 py-2 px-4 bg-green-600 hover:bg-green-500 text-white font-medium rounded-lg transition-colors text-center"
                 >
-                  ⬇️ Download
+                  ⬇️ Download {design.final_image_url ? 'Final' : 'Draft'}
                 </a>
               )}
               <button
@@ -233,6 +272,7 @@ export function DesignsClient({ designs: initialDesigns }: { designs: TshirtDesi
   const stats = {
     total: designs.length,
     pending: designs.filter(d => d.status === 'pending').length,
+    regenerating: designs.filter(d => d.status === 'regenerating').length,
     approved: designs.filter(d => d.status === 'approved').length,
     printed: designs.filter(d => d.status === 'printed').length,
     avgScore: designs.length > 0 
