@@ -14,21 +14,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
     }
     
-    const updateData: Record<string, unknown> = { status }
-    
-    // Add timestamp for reviewed_at when approving/rejecting
-    if (status === 'approved' || status === 'rejected') {
-      updateData.reviewed_at = new Date().toISOString()
-    }
-    
-    // Add timestamp for printed_at when marking as printed
-    if (status === 'printed') {
-      updateData.printed_at = new Date().toISOString()
-    }
-    
     const { error } = await supabase
       .from('tshirt_designs')
-      .update(updateData)
+      .update({ status })
       .eq('id', id)
     
     if (error) {
