@@ -261,4 +261,17 @@ export type ProjectTask = {
   completed_at: string | null
 }
 
-// Cache bust: Tue Mar 03 03:19 UTC 2026 - Added project types
+// T-Shirt Design Types
+export type TshirtDesign = {
+  id: string
+  name: string
+  concept: string | null
+  prompt: string | null
+  image_url: string | null
+  score: number
+  status: 'pending' | 'approved' | 'rejected' | 'printed'
+  notes: string | null
+  created_at: string
+}
+
+// Cache bust: Mon Mar 10 01:30 UTC 2026 - Added tshirt design types
