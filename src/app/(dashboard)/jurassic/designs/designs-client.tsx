@@ -71,7 +71,7 @@ function Lightbox({
       onClick={onClose}
     >
       <div 
-        className="bg-neutral-900 border border-white/10 rounded-lg max-w-4xl max-h-[90vh] overflow-hidden shadow-2xl"
+        className="bg-neutral-900 border border-white/10 rounded-lg max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Image with checkered background for transparency */}
@@ -148,23 +148,22 @@ function Lightbox({
           {design.status === 'pending' && showRejectForm && (
             <div className="pt-3 border-t border-white/10 space-y-3">
               <label className="block">
-                <span className="text-sm text-gray-400">What should change?</span>
+                <span className="text-sm text-gray-400">Feedback <span className="text-gray-600">(optional)</span></span>
                 <textarea
                   value={feedback}
                   onChange={(e) => setFeedback(e.target.value)}
-                  placeholder="e.g., Make the dinosaur bigger, change the font style..."
+                  placeholder="What would you change? Leave blank to reject without feedback."
                   className="mt-1 w-full px-3 py-2 bg-black/30 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-red-500 resize-none"
-                  rows={3}
-                  autoFocus
+                  rows={2}
                 />
               </label>
               <div className="flex gap-3">
                 <button
-                  onClick={() => handleStatusChange('rejected', feedback)}
+                  onClick={() => handleStatusChange('rejected', feedback || undefined)}
                   disabled={updating}
                   className="flex-1 py-2 px-4 bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white font-medium rounded-lg transition-colors"
                 >
-                  {updating ? 'Submitting...' : '✕ Submit Rejection'}
+                  {updating ? 'Rejecting...' : '✕ Reject'}
                 </button>
                 <button
                   onClick={() => { setShowRejectForm(false); setFeedback(''); }}
