@@ -22,6 +22,11 @@ const monitorNav = [
   { href: '/ops', label: 'Cron Jobs', icon: '⚙️' },
 ]
 
+const jurassicNav = [
+  { href: '/jurassic', label: 'Overview', icon: '🦖' },
+  { href: '/jurassic/designs', label: 'T-Shirt Designs', icon: '👕' },
+]
+
 const exploreNav = [
   { href: '/content', label: 'Content', icon: '📝' },
   { href: '/directories/businesses', label: 'Businesses', icon: '🏢' },
@@ -94,6 +99,17 @@ export function Shell({ children }: { children: ReactNode }) {
           <span className="text-[10px] font-mono text-blue-600/60 tracking-widest uppercase">Monitor</span>
         </div>
         {monitorNav.map((item) => (
+          <Link key={item.href} href={item.href} className={linkClass(item.href)} onClick={closeMobileMenu}>
+            <span className="text-base">{item.icon}</span>
+            <span className="font-medium">{item.label}</span>
+          </Link>
+        ))}
+
+        {/* JURASSIC section */}
+        <div className="pt-4 pb-1 px-3">
+          <span className="text-[10px] font-mono text-emerald-600/60 tracking-widest uppercase">Jurassic</span>
+        </div>
+        {jurassicNav.map((item) => (
           <Link key={item.href} href={item.href} className={linkClass(item.href)} onClick={closeMobileMenu}>
             <span className="text-base">{item.icon}</span>
             <span className="font-medium">{item.label}</span>
