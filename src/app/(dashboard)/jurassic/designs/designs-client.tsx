@@ -254,7 +254,26 @@ function Lightbox({
 export function DesignsClient({ designs: initialDesigns }: { designs: TshirtDesign[] }) {
   const [designs, setDesigns] = useState(initialDesigns)
   const [selectedDesign, setSelectedDesign] = useState<TshirtDesign | null>(null)
+  const [deleting, setDeleting] = useState<string | null>(null)
   const router = useRouter()
+  
+  const handleDelete = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation() // Don't open lightbox
+    if (!confirm('Delete this design permanently?')) return
+    
+    setDeleting(id)
+    try {
+      const res = await fetch(`/api/designs/${id}`, { method: 'DELETE' })
+      if (res.ok) {
+        setDesigns(prev => prev.filter(d => d.id !== id))
+        if (selectedDesign?.id === id) setSelectedDesign(null)
+        router.refresh()
+      }
+    } catch (err) {
+      console.error('Failed to delete:', err)
+    }
+    setDeleting(null)
+  }
   
   const handleStatusChange = async (id: string, status: string, feedback?: string) => {
     try {
@@ -352,9 +371,26 @@ export function DesignsClient({ designs: initialDesigns }: { designs: TshirtDesi
             {designs.map((design) => (
               <div 
                 key={design.id} 
-                className="bg-neutral-800 border border-white/10 rounded-lg overflow-hidden hover:border-white/30 transition-all cursor-pointer group"
-                onClick={() => design.image_url && setSelectedDesign(design)}
+                className="bg-neutral-800 border border-white/10 rounded-lg overflow-hidden hover:border-white/30 transition-all cursor-pointer group relative"
+                onClick={() => (design.image_url || design.final_image_url) && setSelectedDesign(design)}
               >
+                {/* Delete button - top right */}
+                <button
+                  onClick={(e) => handleDelete(design.id, e)}
+                  disabled={deleting === design.id}
+                  className="absolute top-2 right-2 z-10 bg-black/60 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-sm"
+                  title="Delete design"
+                >
+                  {deleting === design.id ? '...' : '✕'}
+                </button>
+                
+                {/* Final badge if regenerated */}
+                {design.final_image_url && design.image_url !== design.final_image_url && (
+                  <div className="absolute top-2 left-2 z-10 bg-green-600/90 text-white text-xs px-1.5 py-0.5 rounded">
+                    1.5
+                  </div>
+                )}
+                
                 {/* Square image container with checkered bg for transparency */}
                 <div 
                   className="aspect-square flex items-center justify-center overflow-hidden"
@@ -364,9 +400,10 @@ export function DesignsClient({ designs: initialDesigns }: { designs: TshirtDesi
                     backgroundPosition: '0 0, 0 8px, 8px -8px, -8px 0px'
                   }}
                 >
-                  {design.image_url ? (
+                  {/* Show final if exists, otherwise draft */}
+                  {(design.final_image_url || design.image_url) ? (
                     <img 
-                      src={design.image_url} 
+                      src={design.final_image_url || design.image_url || ''} 
                       alt={design.name}
                       className="w-full h-full object-contain group-hover:scale-105 transition-transform"
                     />
