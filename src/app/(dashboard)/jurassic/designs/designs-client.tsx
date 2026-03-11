@@ -85,8 +85,8 @@ function Lightbox({
             ✕
           </button>
           
-          {design.final_image_url ? (
-            // Side-by-side comparison
+          {design.final_image_url && design.image_url && design.final_image_url !== design.image_url ? (
+            // Side-by-side comparison (only if images are different)
             <div className="grid grid-cols-2 gap-1">
               <div className="relative" style={{
                 backgroundImage: 'linear-gradient(45deg, #333 25%, transparent 25%), linear-gradient(-45deg, #333 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #333 75%), linear-gradient(-45deg, transparent 75%, #333 75%)',
@@ -108,14 +108,17 @@ function Lightbox({
               </div>
             </div>
           ) : (
-            // Single image (draft only)
-            <div style={{
+            // Single image (draft only, or same image in both fields)
+            <div className="relative" style={{
               backgroundImage: 'linear-gradient(45deg, #333 25%, transparent 25%), linear-gradient(-45deg, #333 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #333 75%), linear-gradient(-45deg, transparent 75%, #333 75%)',
               backgroundSize: '20px 20px',
               backgroundPosition: '0 0, 0 10px, 10px -10px, -10px 0px'
             }}>
-              {design.image_url && (
-                <img src={design.image_url} alt={design.name} className="w-full max-h-[60vh] object-contain" />
+              {design.final_image_url && (
+                <div className="absolute top-2 left-2 bg-green-600/90 text-white text-xs px-2 py-1 rounded">Final (1.5)</div>
+              )}
+              {(design.final_image_url || design.image_url) && (
+                <img src={design.final_image_url || design.image_url || ''} alt={design.name} className="w-full max-h-[60vh] object-contain" />
               )}
             </div>
           )}
