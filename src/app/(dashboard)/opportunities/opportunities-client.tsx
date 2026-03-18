@@ -10,7 +10,8 @@ import {
   ChevronUp,
   ArrowUpDown,
   Clock,
-  TrendingUp
+  TrendingUp,
+  Star
 } from 'lucide-react'
 
 interface Opportunity {
@@ -33,6 +34,7 @@ interface Opportunity {
   next_action: string
   notes: string
   created_at: string
+  starred?: boolean
 }
 
 interface Props {
@@ -77,6 +79,19 @@ function ScoreBar({ label, score, weight, color }: {
   )
 }
 
+async function toggleStar(id: string, currentStarred: boolean) {
+  try {
+    await fetch('/api/opportunities/star', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, starred: !currentStarred })
+    })
+    window.location.reload()
+  } catch (e) {
+    console.error('Failed to toggle star', e)
+  }
+}
+
 function OpportunityCard({ opp, expanded, onToggle }: { 
   opp: Opportunity
   expanded: boolean
@@ -86,14 +101,25 @@ function OpportunityCard({ opp, expanded, onToggle }: {
                      opp.total_score >= 50 ? 'text-yellow-600' : 'text-gray-500'
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div className={`bg-white rounded-lg shadow-sm border overflow-hidden ${opp.starred ? 'border-yellow-300 bg-yellow-50/30' : 'border-gray-200'}`}>
       {/* Card Header - Two rows for mobile */}
       <div 
         className="px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors"
         onClick={onToggle}
       >
-        {/* Row 1: Title */}
+        {/* Row 1: Star + Title */}
         <div className="flex items-center gap-2 mb-1">
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              toggleStar(opp.id, opp.starred || false)
+            }}
+            className="flex-shrink-0 p-0.5 -ml-1 hover:scale-110 transition-transform"
+          >
+            <Star 
+              className={`w-4 h-4 ${opp.starred ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300 hover:text-yellow-400'}`} 
+            />
+          </button>
           <span className="text-base flex-shrink-0">{categoryEmoji[opp.category] || '❓'}</span>
           <h3 className="font-medium text-gray-900 text-sm leading-tight">{opp.title}</h3>
         </div>
@@ -213,6 +239,7 @@ export function OpportunitiesClient({ opportunities }: Props) {
   const filtered = opportunities
     .filter(opp => {
       if (filter === 'all') return true
+      if (filter === 'starred') return opp.starred === true
       if (filter === 'hot') return opp.total_score >= 70
       if (filter === 'new') return opp.status === 'new'
       if (filter === 'validated') return opp.status === 'validated'
@@ -277,7 +304,7 @@ export function OpportunitiesClient({ opportunities }: Props) {
       {/* Filters and Sort */}
       <div className="flex flex-wrap items-center gap-2 mb-6">
         <Filter className="w-4 h-4 text-gray-400" />
-        {['all', 'hot', 'new', 'validated', 'building'].map(f => (
+        {['all', 'starred', 'hot', 'new', 'validated', 'building'].map(f => (
           <button
             key={f}
             onClick={() => setFilter(f)}
