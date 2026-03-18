@@ -84,7 +84,7 @@ function OpportunityCard({ opp, expanded, onToggle }: {
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-      {/* Compact Header - Title + Score only */}
+      {/* Compact Header - Title + Score + Timestamp */}
       <div 
         className="px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors flex items-center justify-between"
         onClick={onToggle}
@@ -96,7 +96,16 @@ function OpportunityCard({ opp, expanded, onToggle }: {
             {opp.status}
           </span>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0 ml-3">
+        <div className="flex items-center gap-3 flex-shrink-0 ml-3">
+          <span className="text-xs text-gray-400">
+            {new Date(opp.created_at).toLocaleString('en-US', { 
+              month: 'short', 
+              day: 'numeric', 
+              hour: 'numeric', 
+              minute: '2-digit',
+              hour12: true 
+            })}
+          </span>
           <div className={`text-xl font-bold ${scoreColor}`}>
             {opp.total_score?.toFixed(1)}
           </div>
