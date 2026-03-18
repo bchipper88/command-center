@@ -7,7 +7,10 @@ import {
   ExternalLink,
   Filter,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  ArrowUpDown,
+  Clock,
+  TrendingUp
 } from 'lucide-react'
 
 interface Opportunity {
@@ -84,32 +87,38 @@ function OpportunityCard({ opp, expanded, onToggle }: {
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-      {/* Compact Header - Title + Score + Timestamp */}
+      {/* Card Header - Two rows for mobile */}
       <div 
-        className="px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors flex items-center justify-between"
+        className="px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors"
         onClick={onToggle}
       >
-        <div className="flex items-center gap-2 min-w-0 flex-1">
-          <span className="text-lg flex-shrink-0">{categoryEmoji[opp.category] || '❓'}</span>
-          <h3 className="font-medium text-gray-900 truncate">{opp.title}</h3>
-          <span className={`px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0 ${statusColors[opp.status]}`}>
-            {opp.status}
-          </span>
+        {/* Row 1: Title */}
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-base flex-shrink-0">{categoryEmoji[opp.category] || '❓'}</span>
+          <h3 className="font-medium text-gray-900 text-sm leading-tight">{opp.title}</h3>
         </div>
-        <div className="flex items-center gap-3 flex-shrink-0 ml-3">
-          <span className="text-xs text-gray-400">
-            {new Date(opp.created_at).toLocaleString('en-US', { 
-              month: 'short', 
-              day: 'numeric', 
-              hour: 'numeric', 
-              minute: '2-digit',
-              hour12: true 
-            })}
-          </span>
-          <div className={`text-xl font-bold ${scoreColor}`}>
-            {opp.total_score?.toFixed(1)}
+        {/* Row 2: Status, Time, Score */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusColors[opp.status]}`}>
+              {opp.status}
+            </span>
+            <span className="text-xs text-gray-400">
+              {new Date(opp.created_at).toLocaleString('en-US', { 
+                month: 'short', 
+                day: 'numeric', 
+                hour: 'numeric', 
+                minute: '2-digit',
+                hour12: true 
+              })}
+            </span>
           </div>
-          {expanded ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+          <div className="flex items-center gap-2">
+            <div className={`text-lg font-bold ${scoreColor}`}>
+              {opp.total_score?.toFixed(1)}
+            </div>
+            {expanded ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+          </div>
         </div>
       </div>
 
@@ -198,16 +207,25 @@ function OpportunityCard({ opp, expanded, onToggle }: {
 
 export function OpportunitiesClient({ opportunities }: Props) {
   const [filter, setFilter] = useState<string>('all')
+  const [sortBy, setSortBy] = useState<'score' | 'time'>('score')
   const [expandedId, setExpandedId] = useState<string | null>(null)
 
-  const filtered = opportunities.filter(opp => {
-    if (filter === 'all') return true
-    if (filter === 'hot') return opp.total_score >= 70
-    if (filter === 'new') return opp.status === 'new'
-    if (filter === 'validated') return opp.status === 'validated'
-    if (filter === 'building') return opp.status === 'building'
-    return true
-  })
+  const filtered = opportunities
+    .filter(opp => {
+      if (filter === 'all') return true
+      if (filter === 'hot') return opp.total_score >= 70
+      if (filter === 'new') return opp.status === 'new'
+      if (filter === 'validated') return opp.status === 'validated'
+      if (filter === 'building') return opp.status === 'building'
+      return true
+    })
+    .sort((a, b) => {
+      if (sortBy === 'score') {
+        return (b.total_score || 0) - (a.total_score || 0)
+      } else {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      }
+    })
 
   const stats = {
     total: opportunities.length,
@@ -256,8 +274,8 @@ export function OpportunitiesClient({ opportunities }: Props) {
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="flex items-center gap-2 mb-6">
+      {/* Filters and Sort */}
+      <div className="flex flex-wrap items-center gap-2 mb-6">
         <Filter className="w-4 h-4 text-gray-400" />
         {['all', 'hot', 'new', 'validated', 'building'].map(f => (
           <button
@@ -272,6 +290,33 @@ export function OpportunitiesClient({ opportunities }: Props) {
             {f.charAt(0).toUpperCase() + f.slice(1)}
           </button>
         ))}
+        
+        {/* Sort toggle */}
+        <div className="ml-auto flex items-center gap-1">
+          <ArrowUpDown className="w-4 h-4 text-gray-400" />
+          <button
+            onClick={() => setSortBy('score')}
+            className={`px-2 py-1 rounded text-xs font-medium transition-colors flex items-center gap-1 ${
+              sortBy === 'score' 
+                ? 'bg-green-100 text-green-700' 
+                : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+            }`}
+          >
+            <TrendingUp className="w-3 h-3" />
+            Score
+          </button>
+          <button
+            onClick={() => setSortBy('time')}
+            className={`px-2 py-1 rounded text-xs font-medium transition-colors flex items-center gap-1 ${
+              sortBy === 'time' 
+                ? 'bg-blue-100 text-blue-700' 
+                : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+            }`}
+          >
+            <Clock className="w-3 h-3" />
+            Recent
+          </button>
+        </div>
       </div>
 
       {/* Opportunities list */}
