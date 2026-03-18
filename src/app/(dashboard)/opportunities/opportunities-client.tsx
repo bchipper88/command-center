@@ -3,11 +3,7 @@
 import { useState } from 'react'
 import { 
   Lightbulb, 
-  TrendingUp, 
-  Search, 
-  Zap, 
   DollarSign, 
-  Clock,
   ExternalLink,
   Filter,
   ChevronDown,
@@ -149,7 +145,7 @@ function OpportunityCard({ opp, expanded, onToggle }: {
             <div className="mb-4">
               <h4 className="text-sm font-medium text-gray-700 mb-1">Pain Point</h4>
               <blockquote className="text-sm text-gray-600 italic border-l-2 border-gray-300 pl-3">
-                "{opp.source_quote}"
+                &ldquo;{opp.source_quote}&rdquo;
               </blockquote>
             </div>
           )}
@@ -227,7 +223,7 @@ export function OpportunitiesClient({ opportunities }: Props) {
             <Lightbulb className="w-6 h-6 text-yellow-500" />
             Opportunity Tracker
           </h1>
-          <p className="text-gray-500 text-sm">Koerner's hunted opportunities, scored and ranked</p>
+          <p className="text-gray-500 text-sm">Koerner&apos;s hunted opportunities, scored and ranked</p>
         </div>
       </div>
 
