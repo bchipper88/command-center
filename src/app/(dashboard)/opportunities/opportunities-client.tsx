@@ -84,50 +84,46 @@ function OpportunityCard({ opp, expanded, onToggle }: {
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-      {/* Header */}
+      {/* Compact Header - Title + Score only */}
       <div 
-        className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+        className="px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors flex items-center justify-between"
         onClick={onToggle}
       >
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <span className="text-xl">{categoryEmoji[opp.category] || '❓'}</span>
-              <h3 className="font-semibold text-gray-900">{opp.title}</h3>
-              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusColors[opp.status]}`}>
-                {opp.status}
-              </span>
-            </div>
-            {opp.description && (
-              <p className="text-gray-600 text-sm mt-1 line-clamp-2">{opp.description}</p>
-            )}
-          </div>
-          <div className="flex items-center gap-4">
-            <div className={`text-2xl font-bold ${scoreColor}`}>
-              {opp.total_score?.toFixed(1)}
-            </div>
-            {expanded ? <ChevronUp className="w-5 h-5 text-gray-400" /> : <ChevronDown className="w-5 h-5 text-gray-400" />}
-          </div>
-        </div>
-
-        {/* Quick stats */}
-        <div className="flex items-center gap-4 mt-3 text-xs text-gray-500">
-          <span className="flex items-center gap-1">
-            <span className="capitalize">{opp.source}</span>
+        <div className="flex items-center gap-2 min-w-0 flex-1">
+          <span className="text-lg flex-shrink-0">{categoryEmoji[opp.category] || '❓'}</span>
+          <h3 className="font-medium text-gray-900 truncate">{opp.title}</h3>
+          <span className={`px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0 ${statusColors[opp.status]}`}>
+            {opp.status}
           </span>
-          {opp.estimated_tam && (
-            <span className="flex items-center gap-1">
-              <DollarSign className="w-3 h-3" />
-              {opp.estimated_tam}
-            </span>
-          )}
-          <span>{new Date(opp.created_at).toLocaleDateString()}</span>
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0 ml-3">
+          <div className={`text-xl font-bold ${scoreColor}`}>
+            {opp.total_score?.toFixed(1)}
+          </div>
+          {expanded ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
         </div>
       </div>
 
       {/* Expanded details */}
       {expanded && (
         <div className="border-t border-gray-100 p-4 bg-gray-50">
+          {/* Description */}
+          {opp.description && (
+            <p className="text-gray-600 text-sm mb-4">{opp.description}</p>
+          )}
+
+          {/* Quick stats */}
+          <div className="flex items-center gap-4 mb-4 text-xs text-gray-500">
+            <span className="capitalize">{opp.source}</span>
+            {opp.estimated_tam && (
+              <span className="flex items-center gap-1">
+                <DollarSign className="w-3 h-3" />
+                {opp.estimated_tam}
+              </span>
+            )}
+            <span>{new Date(opp.created_at).toLocaleDateString()}</span>
+          </div>
+
           {/* Score breakdown */}
           <div className="mb-4">
             <h4 className="text-sm font-medium text-gray-700 mb-3">Score Breakdown</h4>
