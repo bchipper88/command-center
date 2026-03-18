@@ -2,12 +2,13 @@ import { supabase } from '@/lib/supabase'
 import { OpportunitiesClient } from './opportunities-client'
 
 export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 export default async function OpportunitiesPage() {
   const { data: opportunities } = await supabase
     .from('ideas')
     .select('*')
-    .order('total_score', { ascending: false })
+    .order('created_at', { ascending: false })
 
   return <OpportunitiesClient opportunities={opportunities || []} />
 }
