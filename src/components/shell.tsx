@@ -13,6 +13,7 @@ const doNav = [
   { href: '/tasks', label: 'Tasks', icon: '📋' },
   { href: '/prs', label: 'PRs to Review', icon: '🔀' },
   { href: '/ideas', label: 'Ideas', icon: '💡' },
+  { href: '/opportunities', label: 'Opportunities', icon: '🎯' },
 ]
 
 const monitorNav = [
